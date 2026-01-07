@@ -66,21 +66,39 @@ def package_filesystem(source_dir, output_file):
     
     env = os.environ.copy()
     
-    # Try to find EMSDK root
-    emsdk_root = env.get('EMSDK')
-    if not emsdk_root:
-        try:
-            emcc_path = subprocess.check_output(['which', 'emcc'], text=True).strip()
-            emscripten_dir = os.path.dirname(emcc_path)
-            emsdk_root = os.path.dirname(emscripten_dir)
-        except:
-            pass
+    config_locations = []
     
-    # Set EM_CONFIG to point to the config file
+    # Check where emcc is actually installed
+    try:
+        emcc_path = subprocess.check_output(['which', 'emcc'], text=True).strip()
+        emcc_real = os.path.realpath(emcc_path)
+        emscripten_dir = os.path.dirname(emcc_real)
+        
+        # Common config locations relative to emcc
+        config_locations.extend([
+            os.path.join(emscripten_dir, '.emscripten'),
+            os.path.join(os.path.dirname(emscripten_dir), 'libexec', '.emscripten'),
+            os.path.expanduser('~/.emscripten'),
+        ])
+        
+        print(f"Found emcc at: {emcc_real}")
+    except:
+        pass
+    
+    # Also check EMSDK
+    emsdk_root = env.get('EMSDK')
     if emsdk_root:
-        config_path = os.path.join(emsdk_root, '.emscripten')
+        config_locations.extend([
+            os.path.join(emsdk_root, '.emscripten'),
+            os.path.join(emsdk_root, 'upstream', 'emscripten', '.emscripten'),
+        ])
+    
+    # Find first existing config
+    for config_path in config_locations:
         if os.path.exists(config_path):
             env['EM_CONFIG'] = config_path
+            print(f"Using Emscripten config: {config_path}")
+            break
     
     cmd = [
         'python3',
