@@ -1,0 +1,30 @@
+modules:
+  jira:globalPage:
+    - key: doom-game-jira
+      resource: main
+      resolver:
+        function: resolver
+      title: DOOM
+  confluence:globalPage:
+    - key: doom-game-confluence
+      resource: main
+      resolver:
+        function: resolver
+      title: DOOM
+  jira:issueGlance:
+    - key: doom-glance
+      resource: main
+      title: Play DOOM
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-glance-icon.svg
+  function:
+    - key: resolver
+      handler: index.handler
+app:
+  runtime:
+    name: nodejs18.x
+  id: ari:cloud:ecosystem::app/YOUR_APP_ID_HERE
+permissions:
+  scopes: []
+resources:
+  - key: main
+    path: static/doom
