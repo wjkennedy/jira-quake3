@@ -3,105 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOOM - Chocolate Doom WebAssembly</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #000;
-            font-family: Arial, sans-serif;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        #container {
-            text-align: center;
-            max-width: 100%;
-        }
-
-        #canvas {
-            border: 2px solid #333;
-            display: block;
-            margin: 20px auto;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-        }
-
-        #status {
-            margin: 20px;
-            padding: 10px;
-            background: #1a1a1a;
-            border-radius: 5px;
-        }
-
-        .controls-info {
-            margin: 20px;
-            padding: 15px;
-            background: #2a2a2a;
-            border-radius: 5px;
-            max-width: 600px;
-        }
-
-        .controls-info h3 {
-            margin-top: 0;
-            color: #ff6b6b;
-        }
-
-        .control-row {
-            margin: 8px 0;
-            text-align: left;
-        }
-
-        .key {
-            display: inline-block;
-            background: #444;
-            padding: 2px 8px;
-            border-radius: 3px;
-            margin: 0 3px;
-            font-family: monospace;
-            font-weight: bold;
-        }
-
-        #loading {
-            margin: 20px;
-        }
-
-        .spinner {
-            border: 4px solid #333;
-            border-top: 4px solid #ff6b6b;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <title>DOOM - doomgeneric WebAssembly</title>
+    <!-- Using external CSS file to comply with Forge CSP -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="container">
-        <h1 style="color: #ff6b6b; font-size: 3em; margin: 20px 0; letter-spacing: 8px;">DOOM</h1>
+        <!-- Removed inline style attribute -->
+        <h1 class="doom-title">DOOM</h1>
         
         <div id="loading">
             <div class="spinner"></div>
-            <p>Loading Chocolate Doom WebAssembly...</p>
+            <p>Loading DOOM WebAssembly...</p>
             <p id="progress">Initializing...</p>
         </div>
 
-        <div id="status" style="display: none;">
+        <!-- Removed inline style attribute -->
+        <div id="status">
             <p id="statusText">Ready to play</p>
         </div>
 
-        <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+        <!-- Removed inline oncontextmenu handler -->
+        <canvas id="canvas" tabindex="-1"></canvas>
 
         <div class="controls-info">
             <h3>Controls</h3>
@@ -133,6 +56,13 @@
     </div>
 
     <script type='text/javascript'>
+        document.addEventListener('DOMContentLoaded', function() {
+            var canvas = document.getElementById('canvas');
+            canvas.addEventListener('contextmenu', function(event) {
+                event.preventDefault();
+            });
+        });
+
         var Module = {
             preRun: [],
             postRun: [],
@@ -171,8 +101,8 @@
                 }
                 
                 if (text === '') {
-                    loadingElement.style.display = 'none';
-                    statusElement.style.display = 'block';
+                    loadingElement.className = 'hidden';
+                    statusElement.className = 'visible';
                     document.getElementById('statusText').textContent = 'Game loaded! Click on the canvas to start playing.';
                 }
             },
@@ -190,6 +120,6 @@
             };
         };
     </script>
-    <script async type="text/javascript" src="chocolate-doom.js"></script>
+    <script async type="text/javascript" src="doomgeneric.js"></script>
 </body>
 </html>
