@@ -1,5 +1,5 @@
 modules:
-  confluence:confluenceMacro:
+  confluence:macro:
     - key: lotus-123-macro
       function: macro-handler
       title: Lotus 1-2-3 Spreadsheet
@@ -9,9 +9,9 @@ modules:
         function: resolve-macro
   function:
     - key: macro-handler
-      handler: macroHandler
+      handler: index.macroHandler
     - key: resolve-macro
-      handler: resolveMacro
+      handler: index.resolveMacro
 app:
   runtime:
     name: nodejs20.x
