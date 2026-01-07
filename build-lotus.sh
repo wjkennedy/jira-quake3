@@ -204,19 +204,40 @@ echo ""
 
 # em-dosbox typically outputs dosbox.html, dosbox.js, and dosbox.wasm
 # Find the actual output location
+DOSBOX_OUTPUT=""
+
+# Check common output locations
 if [ -f "dosbox.html" ]; then
-    echo "✓ Found dosbox.html (main output)"
+    echo "✓ Found dosbox.html in current directory"
     DOSBOX_OUTPUT="."
 elif [ -f "src/dosbox.html" ]; then
-    echo "✓ Found src/dosbox.html"
+    echo "✓ Found dosbox.html in src/"
+    DOSBOX_OUTPUT="src"
+elif [ -f "src/dosbox" ]; then
+    echo "✓ Found dosbox executable in src/"
     DOSBOX_OUTPUT="src"
 else
-    echo "Searching for DOSBox output files..."
-    find . -name "dosbox.html" -o -name "dosbox.js" | head -5
+    echo "Searching for DOSBox build outputs..."
     echo ""
-    echo "Error: DOSBox output files not found"
-    echo "Build may have failed or outputs are in unexpected location"
-    exit 1
+    echo "Directory structure:"
+    ls -la src/ 2>/dev/null || echo "  src/ not found"
+    echo ""
+    echo "Looking for dosbox files:"
+    find . -name "dosbox" -o -name "dosbox.html" -o -name "dosbox.js" 2>/dev/null | head -10
+    echo ""
+    
+    # Look for any dosbox.js file
+    FOUND_JS=$(find . -name "dosbox.js" -type f | head -1)
+    if [ -n "$FOUND_JS" ]; then
+        DOSBOX_OUTPUT=$(dirname "$FOUND_JS")
+        echo "Found dosbox.js at: $DOSBOX_OUTPUT"
+    else
+        echo "Error: No DOSBox output files found"
+        echo ""
+        echo "The build may have failed. Check build output above."
+        echo "Expected files: dosbox.html or dosbox.js"
+        exit 1
+    fi
 fi
 
 # Create dosbox filesystem bundle
@@ -250,20 +271,23 @@ mkdir -p static/lotus123
 echo ""
 echo "Copying files to Forge app..."
 
+COPIED_ANY=false
+
 if [ -f "$DOSBOX_OUTPUT/dosbox.js" ]; then
     cp "$DOSBOX_OUTPUT/dosbox.js" static/lotus123/
     echo "✓ Copied dosbox.js"
-else
-    echo "✗ dosbox.js not found in $DOSBOX_OUTPUT"
-    ls -la "$DOSBOX_OUTPUT"/dosbox* 2>/dev/null || echo "No dosbox files found"
-    exit 1
+    COPIED_ANY=true
+fi
+
+if [ -f "$DOSBOX_OUTPUT/dosbox.html" ]; then
+    cp "$DOSBOX_OUTPUT/dosbox.html" static/lotus123/
+    echo "✓ Copied dosbox.html"
 fi
 
 if [ -f "$DOSBOX_OUTPUT/dosbox.wasm" ]; then
     cp "$DOSBOX_OUTPUT/dosbox.wasm" static/lotus123/
     echo "✓ Copied dosbox.wasm"
-else
-    echo "Warning: dosbox.wasm not found (may use .wasm.js)"
+    COPIED_ANY=true
 fi
 
 if [ -f "$DOSBOX_OUTPUT/dosbox.wasm.js" ]; then
@@ -271,11 +295,32 @@ if [ -f "$DOSBOX_OUTPUT/dosbox.wasm.js" ]; then
     echo "✓ Copied dosbox.wasm.js"
 fi
 
-cp build/dosbox/dosbox_fs.data static/lotus123/
-echo "✓ Copied dosbox_fs.data"
+if [ -f "build/dosbox/dosbox_fs.data" ]; then
+    cp build/dosbox/dosbox_fs.data static/lotus123/
+    echo "✓ Copied dosbox_fs.data"
+    COPIED_ANY=true
+fi
 
-cp build/dosbox/dosbox_fs.js static/lotus123/
-echo "✓ Copied dosbox_fs.js"
+if [ -f "build/dosbox/dosbox_fs.js" ]; then
+    cp build/dosbox/dosbox_fs.js static/lotus123/
+    echo "✓ Copied dosbox_fs.js"
+    COPIED_ANY=true
+fi
+
+if [ "$COPIED_ANY" = false ]; then
+    echo ""
+    echo "Error: No DOSBox files were copied"
+    echo ""
+    echo "Debug information:"
+    echo "DOSBOX_OUTPUT=$DOSBOX_OUTPUT"
+    echo ""
+    echo "Files in output directory:"
+    ls -la "$DOSBOX_OUTPUT" 2>/dev/null || echo "  Directory not accessible"
+    echo ""
+    echo "Build directory contents:"
+    ls -la build/dosbox/*.{js,wasm,data} 2>/dev/null || echo "  No matching files"
+    exit 1
+fi
 
 # Verify files
 echo ""
