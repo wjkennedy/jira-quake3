@@ -3,12 +3,16 @@ modules:
     - key: lotus-123-macro
       title: Lotus 1-2-3 Spreadsheet
       description: Embed a Lotus 1-2-3 spreadsheet in your Confluence page
-      function: resolver
       resource: main
       render: native
+      resolver:
+        function: resolver
   function:
     - key: resolver
       handler: index.handler
+resources:
+  - key: main
+    path: static/lotus123/index.html
 app:
   runtime:
     name: nodejs20.x
@@ -21,6 +25,3 @@ permissions:
   content:
     scripts:
       - 'unsafe-eval'
-resources:
-  - key: main
-    path: static/lotus123/index.html
