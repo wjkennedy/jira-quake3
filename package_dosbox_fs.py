@@ -44,6 +44,11 @@ def package_filesystem(source_dir, output_file):
         print(f"Error: Source directory '{source_dir}' does not exist")
         sys.exit(1)
     
+    try:
+        subprocess.run(['emcc', '--generate-config'], check=False, capture_output=True)
+    except Exception:
+        pass
+    
     # Find file_packager
     packager = find_file_packager()
     if not packager:
@@ -59,6 +64,24 @@ def package_filesystem(source_dir, output_file):
     print(f"Using file_packager: {packager}")
     print(f"Packaging {source_dir} into {output_file}...")
     
+    env = os.environ.copy()
+    
+    # Try to find EMSDK root
+    emsdk_root = env.get('EMSDK')
+    if not emsdk_root:
+        try:
+            emcc_path = subprocess.check_output(['which', 'emcc'], text=True).strip()
+            emscripten_dir = os.path.dirname(emcc_path)
+            emsdk_root = os.path.dirname(emscripten_dir)
+        except:
+            pass
+    
+    # Set EM_CONFIG to point to the config file
+    if emsdk_root:
+        config_path = os.path.join(emsdk_root, '.emscripten')
+        if os.path.exists(config_path):
+            env['EM_CONFIG'] = config_path
+    
     cmd = [
         'python3',
         packager,
@@ -69,7 +92,7 @@ def package_filesystem(source_dir, output_file):
     ]
     
     try:
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd, check=True, env=env)
         print(f"✓ Successfully packaged filesystem")
     except subprocess.CalledProcessError as e:
         print(f"Error: Failed to package filesystem: {e}")

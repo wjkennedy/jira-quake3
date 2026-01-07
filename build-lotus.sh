@@ -160,6 +160,12 @@ echo "Building DOSBox WebAssembly files..."
 echo "This may take several minutes..."
 echo ""
 
+echo "Checking Emscripten configuration..."
+if ! emcc --generate-config 2>/dev/null; then
+    echo "Note: Using existing Emscripten configuration"
+fi
+echo ""
+
 if [ ! -f "configure" ]; then
     echo "Generating configure script..."
     if [ -f "autogen.sh" ]; then
