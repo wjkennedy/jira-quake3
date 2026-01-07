@@ -34,7 +34,7 @@ resolver.define("saveSpreadsheet", async (req) => {
     await storage.set(`lotus123-${macroId}`, data)
     return { success: true, message: "Spreadsheet saved successfully" }
   } catch (error) {
-    console.error("[v0] Error saving spreadsheet:", error)
+    console.error("Error saving spreadsheet:", error)
     return { success: false, message: "Failed to save spreadsheet" }
   }
 })
@@ -46,7 +46,7 @@ resolver.define("loadSpreadsheet", async (req) => {
     const data = await storage.get(`lotus123-${macroId}`)
     return { success: true, data: data || null }
   } catch (error) {
-    console.error("[v0] Error loading spreadsheet:", error)
+    console.error("Error loading spreadsheet:", error)
     return { success: false, message: "Failed to load spreadsheet" }
   }
 })
