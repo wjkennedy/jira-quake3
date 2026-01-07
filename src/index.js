@@ -3,7 +3,7 @@ import { storage } from "@forge/api"
 
 const resolver = new Resolver()
 
-resolver.define("macroHandler", async (req) => {
+export const macroHandler = async (req) => {
   const { context } = req
   const macroId = context.extension.macro?.macroId || "default"
 
@@ -12,9 +12,9 @@ resolver.define("macroHandler", async (req) => {
     macroId,
     message: "Lotus 1-2-3 Spreadsheet Ready",
   }
-})
+}
 
-resolver.define("resolveMacro", async (req) => {
+export const resolveMacro = async (req) => {
   const { context } = req
   const macroId = context.extension.macro?.macroId || "default"
 
@@ -25,7 +25,7 @@ resolver.define("resolveMacro", async (req) => {
     macroId,
     savedData: savedData || null,
   }
-})
+}
 
 resolver.define("saveSpreadsheet", async (req) => {
   const { macroId, data } = req.payload

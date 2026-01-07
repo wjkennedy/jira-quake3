@@ -1,5 +1,5 @@
 modules:
-  confluence:macro:
+  macro:
     - key: lotus-123-macro
       function: macro-handler
       title: Lotus 1-2-3 Spreadsheet
