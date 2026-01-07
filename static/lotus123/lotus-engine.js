@@ -367,15 +367,35 @@ class LotusEngine {
 
   async saveSpreadsheet() {
     try {
-      // TODO: Call Forge storage API
       const data = {
         cells: this.cells,
         timestamp: new Date().toISOString(),
       }
 
-      localStorage.setItem("lotus123-data", JSON.stringify(data))
-      this.showStatus("Spreadsheet saved!", "success")
-      console.log("[v0] Spreadsheet saved:", data)
+      if (window.FORGE_ENV && window.FORGE_ENV.isLocal) {
+        // Local dev mode - use mock Forge API
+        const response = await fetch(`${window.FORGE_ENV.apiBase}/saveSpreadsheet`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            macroId: window.FORGE_ENV.macroId,
+            data: data,
+          }),
+        })
+
+        const result = await response.json()
+        if (result.success) {
+          this.showStatus("Spreadsheet saved!", "success")
+          console.log("[v0] Spreadsheet saved to dev server:", data)
+        } else {
+          throw new Error(result.message)
+        }
+      } else {
+        // Fallback to localStorage for now
+        localStorage.setItem("lotus123-data", JSON.stringify(data))
+        this.showStatus("Spreadsheet saved!", "success")
+        console.log("[v0] Spreadsheet saved to localStorage:", data)
+      }
     } catch (error) {
       console.error("[v0] Save error:", error)
       this.showStatus("Save failed", "error")
@@ -384,18 +404,40 @@ class LotusEngine {
 
   async loadSpreadsheet() {
     try {
-      // TODO: Call Forge storage API
-      const data = localStorage.getItem("lotus123-data")
+      if (window.FORGE_ENV && window.FORGE_ENV.isLocal) {
+        // Local dev mode - use mock Forge API
+        const response = await fetch(`${window.FORGE_ENV.apiBase}/loadSpreadsheet`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            macroId: window.FORGE_ENV.macroId,
+          }),
+        })
 
-      if (data) {
-        const parsed = JSON.parse(data)
-        this.cells = parsed.cells || {}
-        this.updateFormulaBar()
-        this.render()
-        this.showStatus("Spreadsheet loaded!", "success")
-        console.log("[v0] Spreadsheet loaded:", parsed)
+        const result = await response.json()
+        if (result.success && result.data) {
+          this.cells = result.data.cells || {}
+          this.updateFormulaBar()
+          this.render()
+          this.showStatus("Spreadsheet loaded!", "success")
+          console.log("[v0] Spreadsheet loaded from dev server:", result.data)
+        } else {
+          this.showStatus("No saved data found", "error")
+        }
       } else {
-        this.showStatus("No saved data found", "error")
+        // Fallback to localStorage for now
+        const data = localStorage.getItem("lotus123-data")
+
+        if (data) {
+          const parsed = JSON.parse(data)
+          this.cells = parsed.cells || {}
+          this.updateFormulaBar()
+          this.render()
+          this.showStatus("Spreadsheet loaded!", "success")
+          console.log("[v0] Spreadsheet loaded from localStorage:", parsed)
+        } else {
+          this.showStatus("No saved data found", "error")
+        }
       }
     } catch (error) {
       console.error("[v0] Load error:", error)
