@@ -16,14 +16,14 @@ A Chocolate Doom WebAssembly port packaged as a Forge app for Atlassian Jira and
 ### Prerequisites
 
 1. Install the Forge CLI:
-```bash
+\`\`\`bash
 npm install -g @forge/cli
-```
+\`\`\`
 
 2. Log in to Forge:
-```bash
+\`\`\`bash
 forge login
-```
+\`\`\`
 
 ### Build Required Files
 
@@ -41,21 +41,21 @@ Required files in `static/doom/`:
 1. Navigate to the project directory
 
 2. Register the app (first time only):
-```bash
+\`\`\`bash
 forge register
-```
+\`\`\`
 
 3. Update the `manifest.yml` with your app ID from the registration
 
 4. Deploy the app:
-```bash
+\`\`\`bash
 forge deploy
-```
+\`\`\`
 
 5. Install the app to your Jira/Confluence site:
-```bash
+\`\`\`bash
 forge install
-```
+\`\`\`
 
 ## Controls
 
@@ -110,7 +110,7 @@ This app uses Chocolate Doom, a source port that accurately reproduces the origi
 
 ## File Structure
 
-```
+\`\`\`
 forge-doom-app/
 ├── manifest.yml                    # Forge app configuration
 ├── package.json                    # Node dependencies
@@ -122,7 +122,7 @@ forge-doom-app/
 │   ├── chocolate-doom.wasm        # WASM binary (BUILD REQUIRED)
 │   └── doom1.wad                  # Shareware game data (DOWNLOAD REQUIRED)
 └── WASM_BUILD_INSTRUCTIONS.md     # Build guide
-```
+\`\`\`
 
 ## Building from Source
 
@@ -136,7 +136,7 @@ Detailed instructions in `WASM_BUILD_INSTRUCTIONS.md`:
 
 ### Quick Build (macOS/Linux)
 
-```bash
+\`\`\`bash
 # Install dependencies
 brew install emscripten automake sdl2 sdl2_mixer sdl2_net
 
@@ -153,18 +153,18 @@ cp src/chocolate-doom.wasm /path/to/forge-app/static/doom/
 # Download shareware WAD
 cd /path/to/forge-app/static/doom/
 wget https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad
-```
+\`\`\`
 
 ## Development
 
 ### Local Testing
 
-```bash
+\`\`\`bash
 # Start local tunnel
 forge tunnel
 
 # Access at the provided URL
-```
+\`\`\`
 
 ### Modifying the Game
 
