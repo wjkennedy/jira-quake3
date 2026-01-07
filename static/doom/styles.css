@@ -16,6 +16,15 @@ body {
   max-width: 100%;
 }
 
+/* Added styles for DOOM logo image */
+.doom-logo {
+  max-width: 400px;
+  width: 90%;
+  height: auto;
+  margin: 20px auto;
+  display: block;
+}
+
 .doom-title {
   color: #ff6b6b;
   font-size: 3em;

@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DOOM - doomgeneric WebAssembly</title>
-    <!-- Using external CSS file to comply with Forge CSP -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="container">
-        <!-- Removed inline style attribute -->
-        <h1 class="doom-title">DOOM</h1>
+        <!-- Replaced text title with DOOM logo image -->
+        <img src="/images/doom-logo.png" alt="DOOM" class="doom-logo">
         
         <div id="loading">
             <div class="spinner"></div>
@@ -18,12 +17,10 @@
             <p id="progress">Initializing...</p>
         </div>
 
-        <!-- Removed inline style attribute -->
         <div id="status">
             <p id="statusText">Ready to play</p>
         </div>
 
-        <!-- Removed inline oncontextmenu handler -->
         <canvas id="canvas" tabindex="-1"></canvas>
 
         <div class="controls-info">
@@ -60,6 +57,58 @@
             var canvas = document.getElementById('canvas');
             canvas.addEventListener('contextmenu', function(event) {
                 event.preventDefault();
+            });
+
+            document.addEventListener('keydown', function(event) {
+                var keyMap = {
+                    'KeyW': 'ArrowUp',
+                    'KeyS': 'ArrowDown',
+                    'KeyA': 'ArrowLeft',
+                    'KeyD': 'ArrowRight'
+                };
+                
+                if (keyMap[event.code]) {
+                    event.preventDefault();
+                    var mappedEvent = new KeyboardEvent('keydown', {
+                        key: keyMap[event.code],
+                        code: keyMap[event.code],
+                        keyCode: {
+                            'ArrowUp': 38,
+                            'ArrowDown': 40,
+                            'ArrowLeft': 37,
+                            'ArrowRight': 39
+                        }[keyMap[event.code]],
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    canvas.dispatchEvent(mappedEvent);
+                }
+            });
+
+            document.addEventListener('keyup', function(event) {
+                var keyMap = {
+                    'KeyW': 'ArrowUp',
+                    'KeyS': 'ArrowDown',
+                    'KeyA': 'ArrowLeft',
+                    'KeyD': 'ArrowRight'
+                };
+                
+                if (keyMap[event.code]) {
+                    event.preventDefault();
+                    var mappedEvent = new KeyboardEvent('keyup', {
+                        key: keyMap[event.code],
+                        code: keyMap[event.code],
+                        keyCode: {
+                            'ArrowUp': 38,
+                            'ArrowDown': 40,
+                            'ArrowLeft': 37,
+                            'ArrowRight': 39
+                        }[keyMap[event.code]],
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    canvas.dispatchEvent(mappedEvent);
+                }
             });
         });
 
