@@ -1,28 +1,29 @@
 modules:
-  jira:globalPage:
-    - key: doom-game-jira
+  confluence:confluenceMacro:
+    - key: lotus-123-macro
+      function: macro-handler
+      title: Lotus 1-2-3 Spreadsheet
+      description: Embed a Lotus 1-2-3 spreadsheet in your Confluence page
       resource: main
-      title: DOOM
-  confluence:globalPage:
-    - key: doom-game-confluence
-      resource: main
-      route: doom-game
-      title: DOOM
-  jira:issueGlance:
-    - key: doom-glance
-      resource: main
-      label: DOOM
-      title: Play DOOM
-      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-glance-icon.svg
+      resolver:
+        function: resolve-macro
+  function:
+    - key: macro-handler
+      handler: macroHandler
+    - key: resolve-macro
+      handler: resolveMacro
 app:
   runtime:
     name: nodejs20.x
   id: ari:cloud:ecosystem::app/YOUR_APP_ID_HERE
 permissions:
-  scopes: []
+  scopes:
+    - 'storage:app'
+    - 'read:confluence-content.all'
+    - 'write:confluence-content'
   content:
     scripts:
       - 'unsafe-eval'
 resources:
   - key: main
-    path: static/doom
+    path: static/lotus123

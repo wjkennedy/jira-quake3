@@ -36,6 +36,13 @@ static/doom/doomgeneric.wasm
 static/doom/doomgeneric.data
 static/doom/doom1.wad
 
+# Lotus 1-2-3 build artifacts
+build/em-dosbox/
+build/lotus/
+static/lotus123/dosbox.js
+static/lotus123/dosbox.wasm
+static/lotus123/lotus123.zip
+
 # macOS
 .DS_Store
 

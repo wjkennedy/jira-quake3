@@ -1,16 +1,17 @@
-# DOOM Forge App for Jira & Confluence
+# Lotus 1-2-3 Forge App for Confluence
 
-A doomgeneric WebAssembly port packaged as a Forge app for Atlassian Jira and Confluence. This is the actual DOOM game engine compiled to WebAssembly with shareware WAD file support.
+A Lotus 1-2-3 spreadsheet application packaged as a Forge app for Atlassian Confluence. This brings the classic spreadsheet experience to Confluence pages with save functionality.
 
 ## Features
 
-- 🎮 Authentic DOOM gameplay via doomgeneric port
-- 🕹️ WebAssembly-powered performance
-- 📦 Includes shareware Episode 1 (doom1.wad)
-- 🎵 Full sound and music support
-- ⌨️ Classic DOOM controls
-- 🌐 Runs entirely in the browser
-- 🚀 Simple build process with automated script
+- 📊 Classic Lotus 1-2-3 spreadsheet interface
+- 💾 Save spreadsheets to Confluence storage
+- 📝 Formula support with cell references
+- 🎨 Multiple cell formats (Number, Currency, Percent, Date)
+- ⌨️ Keyboard navigation and shortcuts
+- 📋 Copy/paste functionality
+- 🔢 100 rows x 26 columns (expandable)
+- 🖱️ Click and double-click cell editing
 
 ## Quick Start
 
@@ -21,240 +22,252 @@ A doomgeneric WebAssembly port packaged as a Forge app for Atlassian Jira and Co
 npm install -g @forge/cli
 ```
 
-2. Install Emscripten:
-```bash
-# macOS
-brew install emscripten
+### Deploy
 
-# Linux - see WASM_BUILD_INSTRUCTIONS.md
-```
-
-### Build and Deploy
-
-1. **Build DOOM files** (automated):
-```bash
-chmod +x build-doom.sh
-./build-doom.sh
-```
-
-This script will:
-- Clone the doomgeneric repository
-- Download doom1.wad (shareware)
-- Compile to WebAssembly
-- Copy files to the correct locations
-
-2. **Login to Forge**:
+1. **Login to Forge**:
 ```bash
 forge login
 ```
 
-3. **Register the app** (first time only):
+2. **Register the app** (first time only):
 ```bash
 forge register
 ```
 
-4. **Deploy**:
+3. **Deploy**:
 ```bash
 forge deploy
 ```
 
-5. **Install to your site**:
+4. **Install to your Confluence site**:
 ```bash
 forge install
 ```
 
-## Controls
+## Usage
 
-- **↑ / W** - Move Forward
-- **↓ / S** - Move Backward
-- **← / →** - Turn Left/Right
-- **A / D** - Strafe Left/Right
-- **Ctrl** - Fire
-- **Space** - Use/Open
-- **1-7** - Select Weapon
-- **ESC** - Menu
+### Adding Lotus 1-2-3 to a Confluence Page
 
-## How It Works
+1. Edit any Confluence page
+2. Type `/lotus` or `/spreadsheet` to insert the macro
+3. The Lotus 1-2-3 spreadsheet will appear embedded in your page
+4. Start entering data and formulas
 
-### doomgeneric
+### Keyboard Shortcuts
 
-This app uses doomgeneric, a highly portable DOOM source port specifically designed for easy porting to different platforms. It's compiled to WebAssembly using Emscripten, allowing it to run natively in the browser with full sound and music support.
+- **Arrow Keys** - Navigate between cells
+- **Enter** - Start editing current cell / Move down
+- **Tab** - Move to next cell (right)
+- **F2** - Edit current cell
+- **Escape** - Cancel editing
+- **Delete** - Clear current cell
+- **Ctrl+C** - Copy cell
+- **Ctrl+V** - Paste cell
 
-### WebAssembly Integration
+### Formula Support
 
-1. **Emscripten**: Compiles C DOOM source code to WASM
-2. **Virtual File System**: Loads doom1.wad into Emscripten's virtual filesystem
-3. **SDL2**: Provides graphics, input, and audio through browser APIs
-4. **Canvas Rendering**: Game renders to HTML5 Canvas element
+Lotus 1-2-3 supports formulas starting with `=`:
+
+```
+=A1+B1          // Add two cells
+=A1*2           // Multiply by constant
+=SUM(A1:A10)    // Sum a range (planned)
+=(A1+A2)/2      // Complex formulas
+```
+
+### Cell Formats
+
+- **General** - Default text/number display
+- **Number** - Fixed decimal places
+- **Currency** - Dollar sign with 2 decimals
+- **Percent** - Percentage display
+- **Date** - Date formatting
+
+### Saving Data
+
+Click the **Save** button in the toolbar to persist your spreadsheet data to Confluence storage. Each macro instance maintains its own independent spreadsheet.
+
+## Technical Architecture
 
 ### Forge Integration
 
-- **Custom UI Resources**: Static files hosted by Atlassian infrastructure
-- **Global Pages**: Accessible from Jira and Confluence app menus
-- **Issue Glance**: Optional DOOM launcher in Jira issues (because why not?)
+- **Confluence Macro**: Embeds the spreadsheet in any Confluence page
+- **Forge Storage**: Persists spreadsheet data per macro instance
+- **Static Resources**: HTML/CSS/JS served from Forge infrastructure
 
-## Accessing the Game
-
-### In Jira
-
-1. Click the "Apps" dropdown in the top navigation
-2. Select "DOOM" from the menu
-3. Or view the glance panel on any issue
-
-### In Confluence
-
-1. Click the "Apps" dropdown in the top navigation
-2. Select "DOOM" from the menu
-
-## Technical Stack
-
-- **Forge Platform**: Atlassian's serverless app framework
-- **doomgeneric**: Easily portable DOOM source port
-- **WebAssembly**: Native-speed game engine execution
-- **Emscripten**: C to WASM compiler toolchain
-- **SDL2**: Cross-platform multimedia library
-
-## File Structure
+### Components
 
 ```
-forge-doom-app/
-├── manifest.yml                    # Forge app configuration
-├── package.json                    # Node dependencies
-├── build-doom.sh                   # Automated build script
+lotus-123-forge-app/
+├── manifest.yml              # Forge app configuration
+├── package.json              # Dependencies
 ├── src/
-│   └── index.js                   # Forge resolver function
-├── static/doom/
-│   ├── index.html                 # Game launcher page
-│   ├── doomgeneric.js             # Emscripten JS (generated by build)
-│   ├── doomgeneric.wasm           # WASM binary (generated by build)
-│   └── doomgeneric.data           # Packaged game data (generated by build)
-├── build/                         # Build artifacts (gitignored)
-│   └── doomgeneric/              # Cloned repository
-└── WASM_BUILD_INSTRUCTIONS.md     # Detailed build guide
+│   └── index.js             # Forge resolver (save/load handlers)
+├── static/lotus123/
+│   ├── index.html           # Main UI
+│   ├── styles.css           # Lotus 1-2-3 themed styling
+│   ├── lotus-engine.js      # Spreadsheet engine
+│   ├── dosbox.js            # DOSBox WASM (future)
+│   └── lotus-logo.png       # App icon
+└── README.md
 ```
 
-## Building from Source
+### Current Implementation
 
-### Automated Build (Recommended)
+**Version 1.0** uses a custom JavaScript spreadsheet engine that replicates core Lotus 1-2-3 functionality:
 
-```bash
-./build-doom.sh
-```
+- Cell grid rendering
+- Formula evaluation
+- Basic functions
+- Cell formatting
+- Keyboard navigation
 
-The script handles everything:
-- Clones doomgeneric repository
-- Downloads doom1.wad shareware
-- Compiles with Emscripten
-- Copies files to static/doom/
+### Future Enhancement: DOSBox Integration
 
-### Manual Build
+**Version 2.0** will integrate actual Lotus 1-2-3 via DOSBox WebAssembly:
 
-See `WASM_BUILD_INSTRUCTIONS.md` for detailed manual build instructions.
+- Real Lotus 1-2-3 DOS executable
+- Authentic retro experience
+- Full feature compatibility
+- File import/export (.WK1, .WKS)
 
 ## Development
 
 ### Local Testing
 
 ```bash
-# Start local tunnel
+# Start local development tunnel
 forge tunnel
 
-# Access at the provided URL
+# Access via the provided URL
 ```
 
-### Modifying the Game
+### Modifying the Spreadsheet Engine
 
-The actual game logic is in the compiled WASM. To modify:
+Edit `static/lotus123/lotus-engine.js` to customize:
+- Cell dimensions and layout
+- Formula parser and evaluator
+- Rendering styles
+- Additional functions
 
-1. Edit source in `build/doomgeneric/doomgeneric/`
-2. Rebuild: `./build-doom.sh` or `make -f Makefile.emscripten`
-3. Redeploy: `forge deploy`
+### Adding Formula Functions
 
-### Customizing the UI
+Extend the `computeValue()` method in `lotus-engine.js`:
 
-Edit `static/doom/index.html` to customize:
-- Loading screens
-- Control instructions
-- Canvas styling
-- Emscripten Module configuration
+```javascript
+// Add new function
+evalFormula = evalFormula.replace(/AVERAGE$$([^)]+)$$/gi, (match, range) => {
+  // Implementation
+  return result
+})
+```
 
-## File Size Considerations
+## API Reference
 
-Total app size: ~5.5 MB
+### Forge Resolver Functions
 
-- doomgeneric.js: ~50-100 KB
-- doomgeneric.wasm: ~1.2 MB  
-- doomgeneric.data: ~4.3 MB (includes doom1.wad and assets)
+**macroHandler**
+- Initializes macro with unique ID
+- Returns configuration to UI
 
-This is within Forge's static resource limits.
+**resolveMacro**
+- Loads saved spreadsheet data
+- Returns data to UI
+
+**saveSpreadsheet**
+- Persists spreadsheet state
+- Parameters: `{ macroId, data }`
+
+**loadSpreadsheet**
+- Retrieves saved spreadsheet
+- Parameters: `{ macroId }`
+
+## Permissions
+
+Required Forge permissions:
+- `storage:app` - Save/load spreadsheet data
+- `read:confluence-content.all` - Read page context
+- `write:confluence-content` - Embed macro in pages
+
+## Roadmap
+
+### Phase 1: Core Functionality ✅
+- Basic spreadsheet grid
+- Cell editing and navigation
+- Simple formulas
+- Save/load to Forge storage
+- Confluence macro integration
+
+### Phase 2: Enhanced Features (Planned)
+- More formula functions (SUM, AVERAGE, IF, VLOOKUP)
+- Cell range selection
+- Cell formatting (bold, italic, alignment)
+- Row/column insert/delete
+- Undo/redo
+
+### Phase 3: DOSBox Integration (Future)
+- Compile DOSBox to WebAssembly
+- Mount Lotus 1-2-3 DOS executable
+- Virtual file system for .WK1 files
+- Import/export capabilities
+
+### Phase 4: Collaboration (Future)
+- Real-time multi-user editing
+- Change tracking
+- Comments and annotations
+- Export to modern formats (Excel, CSV)
+
+## Browser Compatibility
+
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+Requires HTML5 Canvas and ES6 JavaScript support.
 
 ## Performance
 
-- Native WASM execution speed
-- 35 FPS (original DOOM framerate)
-- Resolution: 320x200 (scaled to canvas)
-- Works on desktop and mobile browsers
-
-## License
-
-GPL-2.0 License
-
-This project uses:
-- doomgeneric source port (GPL-2.0)
-- Original DOOM game engine by id Software
-- Shareware episode freely available
-
-## Credits
-
-- **id Software**: Original DOOM (1993)
-- **ozkl**: doomgeneric portable DOOM implementation
-- **Emscripten Team**: C/C++ to WebAssembly compiler
+- Lightweight JavaScript engine
+- 100 rows x 26 columns rendered efficiently
+- Instant save/load via Forge storage
+- No external dependencies
 
 ## Troubleshooting
 
-**Build fails:**
-- Ensure Emscripten is installed: `emcc --version`
-- Check that you have git and make installed
-- Try running `./build-doom.sh` again
+**Macro won't load:**
+- Ensure app is deployed: `forge deploy`
+- Check permissions in manifest.yml
+- Verify installation: `forge install --upgrade`
 
-**Files not loading:**
-- Verify all files exist in `static/doom/`
+**Data not saving:**
 - Check browser console for errors
-- Run `ls -lh static/doom/` to verify files
+- Verify Forge storage permissions
+- Ensure unique macro ID is generated
 
-**Game won't start:**
-- Click on canvas to give it focus
-- Check that build completed successfully
-- Verify WASM files compiled correctly
-- Check browser console for JavaScript errors
+**Formulas showing #ERROR:**
+- Check formula syntax (must start with =)
+- Verify cell references exist
+- Complex formulas may need debugging
 
-**Performance issues:**
-- Close other browser tabs
-- Try a different browser (Chrome/Firefox recommended)
-- Check browser WebAssembly support
+## License
+
+MIT License
+
+This is an independent recreation inspired by the original Lotus 1-2-3 spreadsheet software by Lotus Software (IBM).
+
+## Credits
+
+- Original Lotus 1-2-3: Lotus Software / IBM
+- Forge Platform: Atlassian
+- DOSBox: DOSBox Team (for future integration)
 
 ## Resources
 
-- [doomgeneric GitHub](https://github.com/ozkl/doomgeneric)
-- [Live Demo](https://ozkl.github.io/doomgeneric/)
-- [Emscripten Documentation](https://emscripten.org/)
 - [Forge Developer Guide](https://developer.atlassian.com/platform/forge/)
-- [DOOM Wiki](https://doomwiki.org/)
-
-## FAQ
-
-**Q: Why doomgeneric instead of Chocolate Doom?**
-A: doomgeneric has a simpler build process and better Emscripten 4.x support. It's specifically designed for easy porting.
-
-**Q: Can I use the full version of DOOM?**
-A: Yes! Replace doom1.wad with doom.wad (registered version) before building.
-
-**Q: Does this work on mobile?**
-A: The game loads on mobile browsers but controls are designed for keyboard/mouse.
-
-**Q: Can I add custom WADs?**
-A: Yes, but you'll need to modify the build process to package additional WAD files.
+- [Confluence Macros](https://developer.atlassian.com/platform/forge/manifest-reference/modules/confluence-macro/)
+- [Lotus 1-2-3 Documentation](https://en.wikipedia.org/wiki/Lotus_1-2-3)
 
 ---
 
-**Note**: This is an authentic DOOM implementation using the original game engine compiled to WebAssembly, not a recreation. You're playing the real DOOM!
+**Note**: This is a recreation of Lotus 1-2-3 functionality in modern JavaScript. Full DOS emulation coming in future versions!

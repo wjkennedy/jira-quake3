@@ -1,11 +1,12 @@
 {
-  "name": "doom-forge-app",
+  "name": "lotus-123-forge-app",
   "version": "1.0.0",
-  "description": "DOOM game as a Forge app for Jira & Confluence",
+  "description": "Lotus 1-2-3 spreadsheet as a Forge app for Confluence",
   "private": true,
   "scripts": {},
   "dependencies": {
     "@forge/resolver": "1.7.1",
+    "@forge/api": "4.0.0",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
