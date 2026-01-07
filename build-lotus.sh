@@ -198,6 +198,27 @@ fi
 echo ""
 echo "✓ Build completed successfully"
 
+echo ""
+echo "Locating DOSBox output files..."
+echo ""
+
+# em-dosbox typically outputs dosbox.html, dosbox.js, and dosbox.wasm
+# Find the actual output location
+if [ -f "dosbox.html" ]; then
+    echo "✓ Found dosbox.html (main output)"
+    DOSBOX_OUTPUT="."
+elif [ -f "src/dosbox.html" ]; then
+    echo "✓ Found src/dosbox.html"
+    DOSBOX_OUTPUT="src"
+else
+    echo "Searching for DOSBox output files..."
+    find . -name "dosbox.html" -o -name "dosbox.js" | head -5
+    echo ""
+    echo "Error: DOSBox output files not found"
+    echo "Build may have failed or outputs are in unexpected location"
+    exit 1
+fi
+
 # Create dosbox filesystem bundle
 echo ""
 echo "Creating filesystem bundle..."
@@ -229,11 +250,32 @@ mkdir -p static/lotus123
 echo ""
 echo "Copying files to Forge app..."
 
-cp build/dosbox/dosbox.js static/lotus123/
-cp build/dosbox/dosbox.wasm static/lotus123/
-cp build/dosbox/dosbox_fs.data static/lotus123/
+if [ -f "$DOSBOX_OUTPUT/dosbox.js" ]; then
+    cp "$DOSBOX_OUTPUT/dosbox.js" static/lotus123/
+    echo "✓ Copied dosbox.js"
+else
+    echo "✗ dosbox.js not found in $DOSBOX_OUTPUT"
+    ls -la "$DOSBOX_OUTPUT"/dosbox* 2>/dev/null || echo "No dosbox files found"
+    exit 1
+fi
 
-echo "✓ Files copied to static/lotus123/"
+if [ -f "$DOSBOX_OUTPUT/dosbox.wasm" ]; then
+    cp "$DOSBOX_OUTPUT/dosbox.wasm" static/lotus123/
+    echo "✓ Copied dosbox.wasm"
+else
+    echo "Warning: dosbox.wasm not found (may use .wasm.js)"
+fi
+
+if [ -f "$DOSBOX_OUTPUT/dosbox.wasm.js" ]; then
+    cp "$DOSBOX_OUTPUT/dosbox.wasm.js" static/lotus123/
+    echo "✓ Copied dosbox.wasm.js"
+fi
+
+cp build/dosbox/dosbox_fs.data static/lotus123/
+echo "✓ Copied dosbox_fs.data"
+
+cp build/dosbox/dosbox_fs.js static/lotus123/
+echo "✓ Copied dosbox_fs.js"
 
 # Verify files
 echo ""
@@ -259,6 +301,13 @@ if [ -f "static/lotus123/dosbox_fs.data" ]; then
     echo "  dosbox_fs.data: $(($DATA_SIZE / 1024 / 1024))MB ✓"
 else
     echo "  dosbox_fs.data: MISSING ✗"
+fi
+
+if [ -f "static/lotus123/dosbox_fs.js" ]; then
+    FS_SIZE=$(stat -f%z static/lotus123/dosbox_fs.js 2>/dev/null || stat -c%s static/lotus123/dosbox_fs.js 2>/dev/null)
+    echo "  dosbox_fs.js: $(($FS_SIZE / 1024))KB ✓"
+else
+    echo "  dosbox_fs.js: MISSING ✗"
 fi
 
 echo ""
