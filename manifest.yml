@@ -1,18 +1,30 @@
 modules:
   jira:globalPage:
     - key: doom-game-jira
-      resource: main
+      resource: doom
       title: DOOM
+    - key: quake-game-jira
+      resource: quake
+      title: Quake
   confluence:globalPage:
     - key: doom-game-confluence
-      resource: main
+      resource: doom
       route: doom-game
       title: DOOM
+    - key: quake-game-confluence
+      resource: quake
+      route: quake-game
+      title: Quake
   jira:issueGlance:
     - key: doom-glance
-      resource: main
+      resource: doom
       label: DOOM
       title: Play DOOM
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-glance-icon.svg
+    - key: quake-glance
+      resource: quake
+      label: Quake
+      title: Play Quake
       icon: https://developer.atlassian.com/platform/forge/images/icons/issue-glance-icon.svg
 app:
   runtime:
@@ -24,5 +36,7 @@ permissions:
     scripts:
       - 'unsafe-eval'
 resources:
-  - key: main
+  - key: doom
     path: static/doom
+  - key: quake
+    path: static/quake

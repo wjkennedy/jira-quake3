@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOOM - doomgeneric WebAssembly</title>
+    <title>Quake - Qwasm WebAssembly</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="container">
-        <img src="doom-logo.png" alt="DOOM" class="doom-logo">
+        <img src="quake-logo.png" alt="Quake" class="quake-logo">
         
         <div id="loading">
             <div class="spinner"></div>
-            <p>Loading DOOM WebAssembly...</p>
+            <p>Loading Quake WebAssembly...</p>
             <p id="progress">Initializing...</p>
         </div>
 
@@ -43,14 +43,29 @@
                 <span class="key">Ctrl</span> Fire
             </div>
             <div class="control-row">
-                <span class="key">Space</span> Use/Open
+                <span class="key">Space</span> Jump
             </div>
             <div class="control-row">
-                <span class="key">1-7</span> Select Weapon
+                <span class="key">1-8</span> Select Weapon
             </div>
             <div class="control-row">
                 <span class="key">ESC</span> Menu
             </div>
+            <div class="control-row">
+                <span class="key">~</span> Console
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>About PAK Files</h3>
+            <p>Quake requires PAK files to run. You can use:</p>
+            <ul>
+                <li><strong>PAK0.PAK</strong> - Shareware version (free)</li>
+                <li><strong>PAK1.PAK</strong> - Full version (requires purchase)</li>
+                <li>Additional PAK files for mods and mission packs</li>
+            </ul>
+            <p>Files should be placed in the <code>id1</code> folder and must be lowercase.</p>
+            <p><strong>Note:</strong> This version requires you to build Qwasm with the necessary PAK files included.</p>
         </div>
     </div>
 
@@ -121,21 +136,17 @@
                 var keyMap = {
                     'KeyW': 'ArrowUp',
                     'KeyS': 'ArrowDown',
-                    'KeyA': 'ArrowLeft',
-                    'KeyD': 'ArrowRight'
+                    'KeyA': ',',  // Quake uses , for strafe left
+                    'KeyD': '.'   // Quake uses . for strafe right
                 };
                 
                 if (keyMap[event.code]) {
                     event.preventDefault();
+                    var mappedKey = keyMap[event.code];
                     var mappedEvent = new KeyboardEvent('keydown', {
-                        key: keyMap[event.code],
-                        code: keyMap[event.code],
-                        keyCode: {
-                            'ArrowUp': 38,
-                            'ArrowDown': 40,
-                            'ArrowLeft': 37,
-                            'ArrowRight': 39
-                        }[keyMap[event.code]],
+                        key: mappedKey,
+                        code: event.code,
+                        keyCode: event.keyCode,
                         bubbles: true,
                         cancelable: true
                     });
@@ -147,21 +158,17 @@
                 var keyMap = {
                     'KeyW': 'ArrowUp',
                     'KeyS': 'ArrowDown',
-                    'KeyA': 'ArrowLeft',
-                    'KeyD': 'ArrowRight'
+                    'KeyA': ',',
+                    'KeyD': '.'
                 };
                 
                 if (keyMap[event.code]) {
                     event.preventDefault();
+                    var mappedKey = keyMap[event.code];
                     var mappedEvent = new KeyboardEvent('keyup', {
-                        key: keyMap[event.code],
-                        code: keyMap[event.code],
-                        keyCode: {
-                            'ArrowUp': 38,
-                            'ArrowDown': 40,
-                            'ArrowLeft': 37,
-                            'ArrowRight': 39
-                        }[keyMap[event.code]],
+                        key: mappedKey,
+                        code: event.code,
+                        keyCode: event.keyCode,
                         bubbles: true,
                         cancelable: true
                     });
@@ -187,17 +194,17 @@
                 return prefix + path;
             },
             preRun: [function() {
-                ENV.SDL_AUDIODRIVER = '';  // Empty string = use default (not 'disk')
+                ENV.SDL_AUDIODRIVER = '';  // Empty string = use default
             }],
             postRun: [function() {
-                console.log('[v0] DOOM postRun - attempting audio unlock');
+                console.log('[v0] Quake postRun - attempting audio unlock');
                 unlockAudio();
             }],
             print: function(text) {
-                console.log('[DOOM]', text);
+                console.log('[Quake]', text);
             },
             printErr: function(text) {
-                console.error('[DOOM Error]', text);
+                console.error('[Quake Error]', text);
             },
             canvas: (function() {
                 var canvas = document.getElementById('canvas');
@@ -214,7 +221,7 @@
             setStatus: function(text) {
                 if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
                 if (text === Module.setStatus.last.text) return;
-                var m = text.match(/([^(]+)$$(\d+(\.\d+)?)\/(\d+)$$/);
+                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
                 var now = Date.now();
                 var progressElement = document.getElementById('progress');
                 var loadingElement = document.getElementById('loading');
@@ -250,7 +257,7 @@
             console.error('[v0] Error:', msg, 'at', url, 'line', line);
         };
     </script>
-    <!-- Load index.js instead of doomgeneric.js to match Dwasm output -->
+    <!-- Load the Qwasm WebAssembly build -->
     <script async type="text/javascript" src="index.js"></script>
 </body>
 </html>

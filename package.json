@@ -1,7 +1,7 @@
 {
-  "name": "doom-forge-app",
+  "name": "quake-doom-forge-app",
   "version": "1.0.0",
-  "description": "DOOM game as a Forge app for Jira & Confluence",
+  "description": "Quake and DOOM games as a Forge app for Jira & Confluence",
   "private": true,
   "scripts": {},
   "dependencies": {
@@ -20,7 +20,7 @@
     "@types/react-dom": "19.2.3",
     "@types/node": "25.0.3",
     "typescript": "5.9.3",
-    "tailwindcss": "4.1.18",
+    "tailwindcss": "^4.1.9",
     "postcss": "8.5.6"
   }
 }
