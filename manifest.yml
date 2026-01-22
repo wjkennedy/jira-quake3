@@ -1,26 +1,9 @@
 modules:
   jira:globalPage:
-    - key: doom-game-jira
-      resource: doom
-      title: DOOM
     - key: quake-game-jira
       resource: quake
       title: Quake
-  confluence:globalPage:
-    - key: doom-game-confluence
-      resource: doom
-      route: doom-game
-      title: DOOM
-    - key: quake-game-confluence
-      resource: quake
-      route: quake-game
-      title: Quake
   jira:issueGlance:
-    - key: doom-glance
-      resource: doom
-      label: DOOM
-      title: Play DOOM
-      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-glance-icon.svg
     - key: quake-glance
       resource: quake
       label: Quake
@@ -29,14 +12,12 @@ modules:
 app:
   runtime:
     name: nodejs20.x
-  id: ari:cloud:ecosystem::app/YOUR_APP_ID_HERE
+  id: ari:cloud:ecosystem::app/7069de3a-a214-4d2a-8f03-481358dc171a
 permissions:
   scopes: []
   content:
     scripts:
       - 'unsafe-eval'
 resources:
-  - key: doom
-    path: static/doom
   - key: quake
     path: static/quake
