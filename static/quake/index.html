@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quake - Qwasm WebAssembly</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="container">
+        <img src="quake-logo.png" alt="Quake" class="quake-logo">
+        
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Loading Quake WebAssembly...</p>
+            <p id="progress">Initializing...</p>
+        </div>
+
+        <div id="status">
+            <p id="statusText">Ready to play</p>
+            <div id="audioControls" style="display: none;">
+                <button id="startButton">Click to Start & Enable Audio</button>
+            </div>
+        </div>
+
+        <canvas id="canvas" tabindex="-1"></canvas>
+
+        <div class="controls-info">
+            <h3>Controls</h3>
+            <div class="control-row">
+                <span class="key">↑</span> <span class="key">W</span> Move Forward
+            </div>
+            <div class="control-row">
+                <span class="key">↓</span> <span class="key">S</span> Move Backward
+            </div>
+            <div class="control-row">
+                <span class="key">←</span> <span class="key">→</span> Turn Left/Right
+            </div>
+            <div class="control-row">
+                <span class="key">A</span> <span class="key">D</span> Strafe Left/Right
+            </div>
+            <div class="control-row">
+                <span class="key">Ctrl</span> Fire
+            </div>
+            <div class="control-row">
+                <span class="key">Space</span> Jump
+            </div>
+            <div class="control-row">
+                <span class="key">1-8</span> Select Weapon
+            </div>
+            <div class="control-row">
+                <span class="key">ESC</span> Menu
+            </div>
+            <div class="control-row">
+                <span class="key">~</span> Console
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h3>About PAK Files</h3>
+            <p>Quake requires PAK files to run. You can use:</p>
+            <ul>
+                <li><strong>PAK0.PAK</strong> - Shareware version (free)</li>
+                <li><strong>PAK1.PAK</strong> - Full version (requires purchase)</li>
+                <li>Additional PAK files for mods and mission packs</li>
+            </ul>
+            <p>Files should be placed in the <code>id1</code> folder and must be lowercase.</p>
+            <p><strong>Note:</strong> This version requires you to build Qwasm with the necessary PAK files included.</p>
+        </div>
+    </div>
+
+    <script type='text/javascript'>
+        var audioUnlocked = false;
+        
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            
+            // Resume any existing Emscripten audio contexts
+            if (typeof SDL !== 'undefined' && SDL.audioContext) {
+                SDL.audioContext.resume().then(function() {
+                    console.log('[v0] SDL audioContext resumed');
+                });
+            }
+            
+            // Also check Module's audio context
+            if (typeof Module !== 'undefined' && Module.audioContext) {
+                Module.audioContext.resume().then(function() {
+                    console.log('[v0] Module audioContext resumed');
+                });
+            }
+            
+            // Try to find and resume any AudioContext
+            var contexts = [window.audioContext, window.webkitAudioContext];
+            contexts.forEach(function(ctx) {
+                if (ctx && ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+            });
+            
+            audioUnlocked = true;
+            console.log('[v0] Audio unlocked');
+            
+            var startButton = document.getElementById('startButton');
+            if (startButton) {
+                startButton.textContent = 'Audio Enabled - Click to Focus';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var canvas = document.getElementById('canvas');
+            var startButton = document.getElementById('startButton');
+            var audioControls = document.getElementById('audioControls');
+            
+            canvas.addEventListener('contextmenu', function(event) {
+                event.preventDefault();
+            });
+
+            // Unlock audio on any user interaction
+            var unlockEvents = ['click', 'touchstart', 'keydown'];
+            unlockEvents.forEach(function(event) {
+                document.addEventListener(event, unlockAudio, { once: false });
+            });
+
+            startButton.addEventListener('click', function() {
+                unlockAudio();
+                canvas.focus();
+            });
+
+            canvas.addEventListener('click', function() {
+                unlockAudio();
+                canvas.focus();
+            });
+
+            // WASD key mapping
+            document.addEventListener('keydown', function(event) {
+                var keyMap = {
+                    'KeyW': 'ArrowUp',
+                    'KeyS': 'ArrowDown',
+                    'KeyA': ',',  // Quake uses , for strafe left
+                    'KeyD': '.'   // Quake uses . for strafe right
+                };
+                
+                if (keyMap[event.code]) {
+                    event.preventDefault();
+                    var mappedKey = keyMap[event.code];
+                    var mappedEvent = new KeyboardEvent('keydown', {
+                        key: mappedKey,
+                        code: event.code,
+                        keyCode: event.keyCode,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    canvas.dispatchEvent(mappedEvent);
+                }
+            });
+
+            document.addEventListener('keyup', function(event) {
+                var keyMap = {
+                    'KeyW': 'ArrowUp',
+                    'KeyS': 'ArrowDown',
+                    'KeyA': ',',
+                    'KeyD': '.'
+                };
+                
+                if (keyMap[event.code]) {
+                    event.preventDefault();
+                    var mappedKey = keyMap[event.code];
+                    var mappedEvent = new KeyboardEvent('keyup', {
+                        key: mappedKey,
+                        code: event.code,
+                        keyCode: event.keyCode,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    canvas.dispatchEvent(mappedEvent);
+                }
+            });
+        });
+
+        var Module = {
+            locateFile: function(path, prefix) {
+                // Get the directory where index.js is loaded from
+                var scripts = document.getElementsByTagName('script');
+                for (var i = 0; i < scripts.length; i++) {
+                    var src = scripts[i].src;
+                    if (src && src.indexOf('index.js') !== -1) {
+                        var dir = src.substring(0, src.lastIndexOf('/') + 1);
+                        console.log('[v0] locateFile:', path, '-> ', dir + path);
+                        return dir + path;
+                    }
+                }
+                // Fallback: assume same directory
+                console.log('[v0] locateFile fallback:', path);
+                return prefix + path;
+            },
+            preRun: [function() {
+                ENV.SDL_AUDIODRIVER = '';  // Empty string = use default
+            }],
+            postRun: [function() {
+                console.log('[v0] Quake postRun - attempting audio unlock');
+                unlockAudio();
+            }],
+            print: function(text) {
+                console.log('[Quake]', text);
+            },
+            printErr: function(text) {
+                console.error('[Quake Error]', text);
+            },
+            canvas: (function() {
+                var canvas = document.getElementById('canvas');
+                canvas.addEventListener("webglcontextlost", function(e) { 
+                    alert('WebGL context lost. You will need to reload the page.'); 
+                    e.preventDefault(); 
+                }, false);
+                return canvas;
+            })(),
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            },
+            setStatus: function(text) {
+                if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+                if (text === Module.setStatus.last.text) return;
+                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+                var now = Date.now();
+                var progressElement = document.getElementById('progress');
+                var loadingElement = document.getElementById('loading');
+                var statusElement = document.getElementById('status');
+                var audioControls = document.getElementById('audioControls');
+                
+                if (m && now - Module.setStatus.last.time < 30) return;
+                Module.setStatus.last.time = now;
+                Module.setStatus.last.text = text;
+                
+                if (m) {
+                    text = m[1];
+                    progressElement.textContent = text + ' (' + m[2] + '/' + m[4] + ')';
+                } else {
+                    progressElement.textContent = text;
+                }
+                
+                if (text === '') {
+                    loadingElement.className = 'hidden';
+                    statusElement.className = 'visible';
+                    document.getElementById('statusText').textContent = 'Game loaded! Click to start.';
+                    audioControls.style.display = 'block';
+                }
+            },
+            totalDependencies: 0,
+            arguments: []
+        };
+        
+        Module.setStatus('Downloading...');
+        
+        window.onerror = function(msg, url, line) {
+            Module.setStatus('Exception thrown, see JavaScript console');
+            console.error('[v0] Error:', msg, 'at', url, 'line', line);
+        };
+    </script>
+    <!-- Load the Qwasm WebAssembly build -->
+    <script async type="text/javascript" src="index.js"></script>
+</body>
+</html>

@@ -8,7 +8,6 @@
 </head>
 <body>
     <div id="container">
-        <!-- Updated logo path to use local static resource -->
         <img src="doom-logo.png" alt="DOOM" class="doom-logo">
         
         <div id="loading">
@@ -19,6 +18,9 @@
 
         <div id="status">
             <p id="statusText">Ready to play</p>
+            <div id="audioControls" style="display: none;">
+                <button id="startButton">Click to Start & Enable Audio</button>
+            </div>
         </div>
 
         <canvas id="canvas" tabindex="-1"></canvas>
@@ -53,12 +55,68 @@
     </div>
 
     <script type='text/javascript'>
+        var audioUnlocked = false;
+        
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            
+            // Resume any existing Emscripten audio contexts
+            if (typeof SDL !== 'undefined' && SDL.audioContext) {
+                SDL.audioContext.resume().then(function() {
+                    console.log('[v0] SDL audioContext resumed');
+                });
+            }
+            
+            // Also check Module's audio context
+            if (typeof Module !== 'undefined' && Module.audioContext) {
+                Module.audioContext.resume().then(function() {
+                    console.log('[v0] Module audioContext resumed');
+                });
+            }
+            
+            // Try to find and resume any AudioContext
+            var contexts = [window.audioContext, window.webkitAudioContext];
+            contexts.forEach(function(ctx) {
+                if (ctx && ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+            });
+            
+            audioUnlocked = true;
+            console.log('[v0] Audio unlocked');
+            
+            var startButton = document.getElementById('startButton');
+            if (startButton) {
+                startButton.textContent = 'Audio Enabled - Click to Focus';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             var canvas = document.getElementById('canvas');
+            var startButton = document.getElementById('startButton');
+            var audioControls = document.getElementById('audioControls');
+            
             canvas.addEventListener('contextmenu', function(event) {
                 event.preventDefault();
             });
 
+            // Unlock audio on any user interaction
+            var unlockEvents = ['click', 'touchstart', 'keydown'];
+            unlockEvents.forEach(function(event) {
+                document.addEventListener(event, unlockAudio, { once: false });
+            });
+
+            startButton.addEventListener('click', function() {
+                unlockAudio();
+                canvas.focus();
+            });
+
+            canvas.addEventListener('click', function() {
+                unlockAudio();
+                canvas.focus();
+            });
+
+            // WASD key mapping
             document.addEventListener('keydown', function(event) {
                 var keyMap = {
                     'KeyW': 'ArrowUp',
@@ -113,13 +171,33 @@
         });
 
         var Module = {
-            preRun: [],
-            postRun: [],
+            locateFile: function(path, prefix) {
+                // Get the directory where index.js is loaded from
+                var scripts = document.getElementsByTagName('script');
+                for (var i = 0; i < scripts.length; i++) {
+                    var src = scripts[i].src;
+                    if (src && src.indexOf('index.js') !== -1) {
+                        var dir = src.substring(0, src.lastIndexOf('/') + 1);
+                        console.log('[v0] locateFile:', path, '-> ', dir + path);
+                        return dir + path;
+                    }
+                }
+                // Fallback: assume same directory
+                console.log('[v0] locateFile fallback:', path);
+                return prefix + path;
+            },
+            preRun: [function() {
+                ENV.SDL_AUDIODRIVER = '';  // Empty string = use default (not 'disk')
+            }],
+            postRun: [function() {
+                console.log('[v0] DOOM postRun - attempting audio unlock');
+                unlockAudio();
+            }],
             print: function(text) {
-                console.log(text);
+                console.log('[DOOM]', text);
             },
             printErr: function(text) {
-                console.error(text);
+                console.error('[DOOM Error]', text);
             },
             canvas: (function() {
                 var canvas = document.getElementById('canvas');
@@ -129,6 +207,10 @@
                 }, false);
                 return canvas;
             })(),
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            },
             setStatus: function(text) {
                 if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
                 if (text === Module.setStatus.last.text) return;
@@ -137,6 +219,7 @@
                 var progressElement = document.getElementById('progress');
                 var loadingElement = document.getElementById('loading');
                 var statusElement = document.getElementById('status');
+                var audioControls = document.getElementById('audioControls');
                 
                 if (m && now - Module.setStatus.last.time < 30) return;
                 Module.setStatus.last.time = now;
@@ -152,23 +235,22 @@
                 if (text === '') {
                     loadingElement.className = 'hidden';
                     statusElement.className = 'visible';
-                    document.getElementById('statusText').textContent = 'Game loaded! Click on the canvas to start playing.';
+                    document.getElementById('statusText').textContent = 'Game loaded! Click to start.';
+                    audioControls.style.display = 'block';
                 }
             },
             totalDependencies: 0,
-            monitorRunDependencies: function(left) {
-                this.totalDependencies = Math.max(this.totalDependencies, left);
-                Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
-            }
+            arguments: []
         };
+        
         Module.setStatus('Downloading...');
-        window.onerror = function() {
+        
+        window.onerror = function(msg, url, line) {
             Module.setStatus('Exception thrown, see JavaScript console');
-            Module.setStatus = function(text) {
-                if (text) console.error('[post-exception status] ' + text);
-            };
+            console.error('[v0] Error:', msg, 'at', url, 'line', line);
         };
     </script>
-    <script async type="text/javascript" src="doomgeneric.js"></script>
+    <!-- Load index.js instead of doomgeneric.js to match Dwasm output -->
+    <script async type="text/javascript" src="index.js"></script>
 </body>
 </html>

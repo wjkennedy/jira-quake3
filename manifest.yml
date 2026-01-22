@@ -1,27 +1,23 @@
 modules:
-  macro:
-    - key: lotus-123-macro
-      title: Lotus 1-2-3 Spreadsheet
-      description: Embed a Lotus 1-2-3 spreadsheet in your Confluence page
-      resource: main
-      render: native
-      resolver:
-        function: resolver
-  function:
-    - key: resolver
-      handler: index.handler
-resources:
-  - key: main
-    path: static/lotus123/index.html
+  jira:globalPage:
+    - key: quake-game-jira
+      resource: quake
+      title: Quake
+  jira:issueGlance:
+    - key: quake-glance
+      resource: quake
+      label: Quake
+      title: Play Quake
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-glance-icon.svg
 app:
   runtime:
     name: nodejs20.x
-  id: ari:cloud:ecosystem::app/YOUR_APP_ID_HERE
+  id: ari:cloud:ecosystem::app/7069de3a-a214-4d2a-8f03-481358dc171a
 permissions:
-  scopes:
-    - 'storage:app'
-    - 'read:confluence-content.all'
-    - 'write:confluence-content'
+  scopes: []
   content:
     scripts:
       - 'unsafe-eval'
+resources:
+  - key: quake
+    path: static/quake

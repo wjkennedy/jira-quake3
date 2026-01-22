@@ -1,159 +1,5 @@
 // ... existing code ...
 
-# Building Doom WebAssembly Files
-
-// <CHANGE> Switching from Chocolate Doom to doomgeneric which has better Emscripten 4.x support
-This guide explains how to compile the Doom WebAssembly files using doomgeneric, which has excellent Emscripten support and a simpler build process.
-
-## Why doomgeneric?
-
-doomgeneric is specifically designed to be easily portable and has a well-maintained Emscripten port that works with modern Emscripten versions (4.x). It includes sound and music support out of the box.
-
-## Prerequisites
-
-### macOS
-```bash
-brew install emscripten
-```
-
-### Linux (Ubuntu/Debian)
-```bash
-# Install Emscripten
-git clone https://github.com/emscripten-core/emsdk.git
-cd emsdk
-./emsdk install latest
-./emsdk activate latest
-source ./emsdk_env.sh
-```
-
-### Windows
-1. Install WSL2 (Windows Subsystem for Linux)
-2. Follow Linux instructions above
-
-## Building
-
-1. **Clone the doomgeneric repository:**
-   ```bash
-   git clone https://github.com/ozkl/doomgeneric.git
-   cd doomgeneric/doomgeneric
-   ```
-
-2. **Build the Emscripten port:**
-   ```bash
-   make -f Makefile.emscripten
-   ```
-
-   That's it! The build is much simpler than Chocolate Doom.
-
-3. **Locate the output files:**
-   After successful build, you'll find these files in `doomgeneric/doomgeneric/`:
-   - `doomgeneric.js`
-   - `doomgeneric.wasm`
-   - `doomgeneric.data` (packaged assets)
-
-## Getting the Shareware WAD
-
-1. **Download doom1.wad:**
-   ```bash
-   cd doomgeneric/doomgeneric
-   wget https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad
-   ```
-
-   Or from other sources:
-   - https://archive.org/details/DoomsharewareEpisode (search for "doom shareware")
-   - Direct link: `wget http://www.doomworld.com/3ddownloads/ports/shareware_doom_iwad.zip`
-
-2. **The Makefile will automatically package the WAD:**
-   When you run `make -f Makefile.emscripten`, it will package doom1.wad into the .data file if it's present in the directory.
-
-## Copying Files to Forge App
-
-1. **Copy the compiled files:**
-   ```bash
-   # From the doomgeneric/doomgeneric directory
-   cp doomgeneric.js /path/to/your/forge-app/static/doom/doom-wasm.js
-   cp doomgeneric.wasm /path/to/your/forge-app/static/doom/
-   cp doomgeneric.data /path/to/your/forge-app/static/doom/
-   ```
-
-   Note: We're renaming `doomgeneric.js` to `doom-wasm.js` to match our HTML file.
-
-2. **Verify file structure:**
-   ```
-   static/doom/
-   ├── index.html
-   ├── doom-wasm.js
-   ├── doomgeneric.wasm
-   └── doomgeneric.data
-   ```
-
-## Quick Setup Script
-
-Save this as `build-doom.sh` in your Forge app root:
-
-```bash
-#!/bin/bash
-
-# Clone and build doomgeneric
-if [ ! -d "doomgeneric" ]; then
-    git clone https://github.com/ozkl/doomgeneric.git
-fi
-
-cd doomgeneric/doomgeneric
-
-# Download doom1.wad if not present
-if [ ! -f "doom1.wad" ]; then
-    echo "Downloading doom1.wad..."
-    wget https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad
-fi
-
-# Build with Emscripten
-echo "Building Doom WebAssembly..."
-make -f Makefile.emscripten
-
-# Copy files to Forge app
-echo "Copying files to Forge app..."
-cp doomgeneric.js ../../static/doom/doom-wasm.js
-cp doomgeneric.wasm ../../static/doom/
-cp doomgeneric.data ../../static/doom/
-
-echo "Done! Doom is ready to deploy."
-```
-
-Make it executable and run:
-```bash
-chmod +x build-doom.sh
-./build-doom.sh
-```
-
-## Alternative: Use Pre-built Demo Files
-
-You can download the working files from the live demo:
-
-1. **Visit:** https://ozkl.github.io/doomgeneric/
-
-2. **Open DevTools** (F12) → Network tab → Refresh
-
-3. **Download these files:**
-   - `doomgeneric.js` → rename to `doom-wasm.js`
-   - `doomgeneric.wasm`
-   - `doomgeneric.data`
-
-4. **Copy to your Forge app's** `static/doom/` directory
-
-## Customization
-
-### Changing Game Settings
-
-Modify the Module configuration in `index.html`:
-
-```javascript
-var Module = {
-    arguments: ['-iwad', 'doom1.wad', '-window'],
-    // ... rest of config
-};
-```
-
 ### Supported Command-Line Arguments
 
 - `-iwad <file>` - Specify IWAD file
@@ -162,72 +8,214 @@ var Module = {
 - `-nomusic` - Disable music
 - `-nosound` - Disable sound effects
 
+// <CHANGE> Added important note about music support
+**IMPORTANT: Music Support**
+
+By default, doomgeneric includes music support. To ensure music works properly:
+
+1. **Do NOT use the `-nomusic` flag** when building or running
+2. **Ensure user interaction** - Modern browsers require user interaction (click/keypress) before audio can play
+3. **Check the build** - The Makefile.emscripten should compile with SDL_mixer support enabled
+4. **Verify the WAD** - Ensure doom1.wad contains music lumps (it should by default)
+
+If music still doesn't work after building:
+- Check browser console for audio-related errors
+- Verify that sound effects work (if they do, the audio system is initialized)
+- Try clicking on the canvas or the "Enable Audio" button after the game loads
+- Some browsers may block MIDI playback - check browser audio permissions
+
 ## Troubleshooting
+
+// ... existing code ...
+
+### Music Not Playing But Sound Effects Work
+
+This is usually caused by:
+
+1. **Browser audio context not initialized** - The HTML now includes an audio initialization button. Make sure to click it or click on the canvas after the game loads.
+
+2. **MIDI support issues** - Some browsers have limited MIDI support. The Emscripten build should use SDL_mixer which converts MIDI to audio.
+
+3. **Build configuration** - Verify that the Makefile.emscripten includes:
+   ```makefile
+   USE_SDL_MIXER=1
+   ```
+
+4. **WAD file music data** - Verify doom1.wad contains music lumps:
+   ```bash
+   strings doom1.wad | grep -i "d_e1m1"
+   ```
+   If this returns nothing, your WAD might be missing music data.
 
 ### Build Error: "cannot detect undeclared builtins"
 
-This error occurs with Chocolate Doom's older autoconf scripts. That's why we switched to doomgeneric, which uses a simple Makefile and doesn't have this issue.
-
-### Emscripten Version Check
-
-```bash
-emcc --version
-# Should show 4.0.22 or similar
+// ... existing code ...
 ```
 
-### Make Command Not Found
+```shellscript file="build-doom.sh"
+#!/bin/bash
 
-```bash
-# macOS
-brew install make
+set -e
 
-# Linux
-sudo apt-get install build-essential
-```
+echo "=========================================="
+echo "DOOM Forge App - Build Script"
+echo "=========================================="
+echo ""
 
-### Files Don't Load in Browser
+# Check if Emscripten is installed
+if ! command -v emcc &> /dev/null; then
+    echo "Error: Emscripten is not installed or not in PATH"
+    echo ""
+    echo "Please install Emscripten:"
+    echo "  macOS: brew install emscripten"
+    echo "  Linux: Follow instructions at https://emscripten.org/docs/getting_started/downloads.html"
+    exit 1
+fi
 
-- Check that files are in `static/doom/` directory
-- Verify the script src in `index.html` matches the filename
-- Check browser console for specific errors
+echo "✓ Emscripten found: $(emcc --version | head -n 1)"
+echo ""
 
-## File Sizes
+# Create build directory if it doesn't exist
+mkdir -p build
 
-The doomgeneric build produces reasonable file sizes:
+# Clone doomgeneric if not present
+if [ ! -d "build/doomgeneric" ]; then
+    echo "Cloning doomgeneric repository..."
+    git clone https://github.com/ozkl/doomgeneric.git build/doomgeneric
+    echo "✓ Repository cloned"
+else
+    echo "✓ doomgeneric repository already exists"
+fi
 
-- doom-wasm.js: ~50-100 KB (loader script)
-- doomgeneric.wasm: ~1.2 MB (game engine)
-- doomgeneric.data: ~4.3 MB (includes doom1.wad and assets)
-- **Total: ~5.5 MB**
+cd build/doomgeneric/doomgeneric
 
-This fits comfortably within Forge's static resource limits.
+# Download doom1.wad if not present
+if [ ! -f "doom1.wad" ]; then
+    echo ""
+    echo "Downloading doom1.wad (shareware version)..."
+    
+    # Try primary source
+    if wget -q https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad; then
+        echo "✓ doom1.wad downloaded"
+    else
+        echo "Primary source failed, trying alternate source..."
+        # Try alternate source
+        if wget -q -O doom1.wad.zip http://www.doomworld.com/3ddownloads/ports/shareware_doom_iwad.zip; then
+            unzip -q doom1.wad.zip
+            rm doom1.wad.zip
+            echo "✓ doom1.wad downloaded and extracted"
+        else
+            echo ""
+            echo "Error: Could not download doom1.wad automatically"
+            echo "Please download it manually from:"
+            echo "  - https://archive.org/details/DoomsharewareEpisode"
+            echo "  - https://doomwiki.org/wiki/DOOM1.WAD"
+            echo ""
+            echo "Place doom1.wad in: build/doomgeneric/doomgeneric/"
+            exit 1
+        fi
+    fi
+else
+    echo "✓ doom1.wad already exists"
+fi
 
-## Testing Locally
+# Verify doom1.wad
+WAD_SIZE=$(stat -f%z doom1.wad 2>/dev/null || stat -c%s doom1.wad 2>/dev/null)
+if [ "$WAD_SIZE" -lt 4000000 ]; then
+    echo "Error: doom1.wad seems too small ($(($WAD_SIZE / 1024))KB). Expected ~4.2MB"
+    echo "Please download a valid doom1.wad file"
+    exit 1
+fi
 
-Before deploying to Forge:
+echo "✓ doom1.wad is valid ($(($WAD_SIZE / 1024 / 1024))MB)"
 
-```bash
-# Start local server in static/doom directory
-cd static/doom
-python3 -m http.server 8000
+# <CHANGE> Added check for music data in WAD file
+echo ""
+echo "Checking for music data in doom1.wad..."
+if strings doom1.wad | grep -q "D_E1M1"; then
+    echo "✓ Music lumps found in doom1.wad"
+else
+    echo "⚠ Warning: Music lumps might be missing from doom1.wad"
+    echo "  The game will still work, but music may not play"
+fi
 
-# Open browser to http://localhost:8000
-```
+# Build with Emscripten
+echo ""
+echo "Building DOOM WebAssembly files with music support..."
+echo "This may take a few minutes..."
+echo ""
 
-## Next Steps
+# <CHANGE> Ensure music support is enabled (not using -nomusic flag)
+echo "Note: Building with full audio support (music and sound effects)"
 
-After building and copying the files:
+make -f Makefile.emscripten
 
-1. **Test locally:** `forge tunnel`
-2. **Deploy:** `forge deploy`
-3. **Install to Jira/Confluence:** `forge install`
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "Error: Build failed"
+    echo "Check the error messages above for details"
+    exit 1
+fi
 
-## Resources
+echo ""
+echo "✓ Build completed successfully"
 
-- [doomgeneric GitHub](https://github.com/ozkl/doomgeneric) - The source repository
-- [Live Demo](https://ozkl.github.io/doomgeneric/) - Working example
-- [Emscripten Documentation](https://emscripten.org/docs/getting_started/index.html)
-- [DOOM Wiki](https://doomwiki.org/) - Game information and resources
-```
+# Go back to project root
+cd ../../..
 
-```html file="" isHidden
+# Create static/doom directory if it doesn't exist
+mkdir -p static/doom
+
+# Copy files
+echo ""
+echo "Copying files to Forge app..."
+
+cp build/doomgeneric/doomgeneric/doomgeneric.js static/doom/
+cp build/doomgeneric/doomgeneric/doomgeneric.wasm static/doom/
+cp build/doomgeneric/doomgeneric/doomgeneric.data static/doom/
+
+echo "✓ Files copied to static/doom/"
+
+# Verify files
+echo ""
+echo "Verifying files..."
+echo ""
+
+if [ -f "static/doom/doomgeneric.js" ]; then
+    JS_SIZE=$(stat -f%z static/doom/doomgeneric.js 2>/dev/null || stat -c%s static/doom/doomgeneric.js 2>/dev/null)
+    echo "  doomgeneric.js: $(($JS_SIZE / 1024))KB ✓"
+else
+    echo "  doomgeneric.js: MISSING ✗"
+fi
+
+if [ -f "static/doom/doomgeneric.wasm" ]; then
+    WASM_SIZE=$(stat -f%z static/doom/doomgeneric.wasm 2>/dev/null || stat -c%s static/doom/doomgeneric.wasm 2>/dev/null)
+    echo "  doomgeneric.wasm: $(($WASM_SIZE / 1024 / 1024))MB ✓"
+else
+    echo "  doomgeneric.wasm: MISSING ✗"
+fi
+
+if [ -f "static/doom/doomgeneric.data" ]; then
+    DATA_SIZE=$(stat -f%z static/doom/doomgeneric.data 2>/dev/null || stat -c%s static/doom/doomgeneric.data 2>/dev/null)
+    echo "  doomgeneric.data: $(($DATA_SIZE / 1024 / 1024))MB ✓"
+else
+    echo "  doomgeneric.data: MISSING ✗"
+fi
+
+echo ""
+echo "=========================================="
+echo "Build Complete!"
+echo "=========================================="
+echo ""
+echo "Your DOOM Forge app is ready to deploy!"
+echo ""
+echo "IMPORTANT - Music Support:"
+echo "  • Make sure to click the 'Enable Audio' button when the game loads"
+echo "  • Modern browsers require user interaction to play audio"
+echo "  • If music doesn't play, check browser console for errors"
+echo ""
+echo "Next steps:"
+echo "  1. Test locally:  forge tunnel"
+echo "  2. Deploy:        forge deploy"
+echo "  3. Install:       forge install"
+echo ""
