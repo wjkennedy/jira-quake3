@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "description": "Quake and DOOM games as a Forge app for Jira & Confluence",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "build:doom": "./game-build.sh doom",
+    "build:quake": "./game-build.sh quake",
+    "build:quake:webgl": "./game-build.sh quake --webgl",
+    "build:quake3": "./game-build.sh quake3",
+    "build:all": "./game-build.sh all"
+  },
   "dependencies": {
     "@forge/resolver": "1.7.1",
     "next": "16.1.1",

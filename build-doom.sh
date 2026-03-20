@@ -7,13 +7,35 @@ echo "DOOM Forge App - Build Script (Dwasm)"
 echo "=========================================="
 echo ""
 
+prepare_emscripten() {
+    if command -v emcc >/dev/null 2>&1 && command -v emcmake >/dev/null 2>&1; then
+        return
+    fi
+    local candidates=()
+    if [ -n "${EMSDK:-}" ]; then
+        candidates+=("$EMSDK")
+    fi
+    candidates+=("$HOME/emsdk")
+    for d in "${candidates[@]}"; do
+        if [ -f "$d/emsdk_env.sh" ]; then
+            echo "Sourcing emsdk environment from $d"
+            # shellcheck disable=SC1090
+            . "$d/emsdk_env.sh" >/dev/null
+            break
+        fi
+    done
+}
+
+prepare_emscripten
+
 # Check if Emscripten is installed
 if ! command -v emcc &> /dev/null; then
     echo "Error: Emscripten is not installed or not in PATH"
     echo ""
     echo "Please install Emscripten:"
-    echo "  macOS: brew install emscripten"
+    echo "  macOS: brew install emscripten or use emsdk"
     echo "  Linux: Follow instructions at https://emscripten.org/docs/getting_started/downloads.html"
+    echo "  Tip: export EMSDK=/path/to/emsdk to auto-source emsdk_env.sh"
     exit 1
 fi
 
@@ -105,8 +127,8 @@ echo ""
 mkdir -p build_wasm
 cd build_wasm
 
-# Run emcmake cmake
-emcmake cmake .. -DCMAKE_BUILD_TYPE=Release
+# Run emcmake cmake (ensure ASM compiler is set for projects enabling ASM)
+emcmake cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_ASM_COMPILER="$(command -v emcc)"
 
 # Build
 make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
