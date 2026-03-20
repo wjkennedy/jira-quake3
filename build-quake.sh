@@ -33,6 +33,28 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Ensure Emscripten environment is active (emsdk)
+prepare_emscripten() {
+    if command -v emcc >/dev/null 2>&1; then
+        return
+    fi
+    local candidates=()
+    if [ -n "${EMSDK:-}" ]; then
+        candidates+=("$EMSDK")
+    fi
+    candidates+=("$HOME/emsdk")
+    for d in "${candidates[@]}"; do
+        if [ -f "$d/emsdk_env.sh" ]; then
+            echo -e "${GREEN}[INFO]${NC} Sourcing emsdk environment from $d"
+            # shellcheck disable=SC1090
+            . "$d/emsdk_env.sh" >/dev/null
+            break
+        fi
+    done
+}
+
+prepare_emscripten
+
 # Check if Emscripten is installed
 if ! command -v emcc &> /dev/null; then
     print_error "Emscripten is not installed or not in PATH"

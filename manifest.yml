@@ -1,13 +1,13 @@
 modules:
   jira:globalPage:
-    - key: quake-game-jira
-      resource: quake
-      title: Quake
+    - key: quake3-game-jira
+      resource: quake3
+      title: Quake3
   jira:issueGlance:
-    - key: quake-glance
-      resource: quake
-      label: Quake
-      title: Play Quake
+    - key: quake3-glance
+      resource: quake3
+      label: Quake3
+      title: Play Quake3
       icon: https://developer.atlassian.com/platform/forge/images/icons/issue-glance-icon.svg
 app:
   runtime:
@@ -19,5 +19,5 @@ permissions:
     scripts:
       - 'unsafe-eval'
 resources:
-  - key: quake
-    path: static/quake
+  - key: quake3
+    path: static/quake3
