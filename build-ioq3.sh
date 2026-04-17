@@ -15,24 +15,32 @@ printf "%bioquake3 Build Script for Forge App%b\n" "${GREEN}" "${NC}"
 echo "========================================"
 
 # Configuration
-IOQ3_REPO="https://github.com/wjkennedy/jioq3"
+IOQ3_REPO="${IOQ3_REPO:-https://github.com/wjkennedy/jioq3}"
 IOQ3_DIR="./ioq3-build"
-FORGE_STATIC_DIR="./static/quake3"
+FORGE_STATIC_DIR="static/quake3"
+ENGINE_DIR="$FORGE_STATIC_DIR/engine"
 BUILD_DIR="$IOQ3_DIR/build/emscripten"
 
 # Options
-INCLUDE_POINT_RELEASE=true  # include pak1..pak8 if present (default)
-LEAN=false                  # force pak0-only when true
-DEMO=false                  # package demoq3/pak0.pk3 instead of baseq3
+# Forge Custom UI resources are limited to 100 MB per resource. The Quake III
+# demo pak fits comfortably, so the default build packages a playable demo into
+# ioquake3.data. Full retail assets remain opt-in because pak0.pk3 ownership and
+# distribution are outside this app.
+INCLUDE_POINT_RELEASE=false
+LEAN=false
+DEMO=true
+PRELOAD=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --full|--include-point-release)
-      INCLUDE_POINT_RELEASE=true; LEAN=false; shift ;;
+      INCLUDE_POINT_RELEASE=true; LEAN=false; DEMO=false; PRELOAD=0; shift ;;
     --lean|--pak0-only)
-      INCLUDE_POINT_RELEASE=false; LEAN=true; shift ;;
+      INCLUDE_POINT_RELEASE=false; LEAN=true; DEMO=false; PRELOAD=0; shift ;;
     --demo)
-      DEMO=true; INCLUDE_POINT_RELEASE=false; LEAN=false; shift ;;
+      DEMO=true; INCLUDE_POINT_RELEASE=false; LEAN=false; PRELOAD=1; shift ;;
+    --preload)
+      PRELOAD=1; shift ;;
     *)
       print_warning "Unknown arg: $1"; shift ;;
   esac
@@ -118,24 +126,44 @@ else
     }
 fi
 
-# Check for baseq3 pak files
-PAK_DIR="$IOQ3_DIR/baseq3"
-mkdir -p "$PAK_DIR"
-
-if [ ! -f "$PAK_DIR/pak0.pk3" ]; then
-    print_warning "pak0.pk3 not found in $PAK_DIR"
-    print_info "Please add your Quake 3 PAK files to: $PAK_DIR"
-    print_info "Files must be lowercase (pak0.pk3, pak1.pk3, etc.)"
-    print_info "See README_QUAKE.md for details on obtaining PAK files"
-    exit 1
+# Apply local overlays if present (do not hand-edit vendor sources)
+if [ -d "overlays/ioq3" ]; then
+  print_info "Applying local ioq3 overlays (net/WebRTC, cmake flags)"
+  rsync -a overlays/ioq3/ "$IOQ3_DIR/"
 fi
 
-print_info "Found pak0.pk3"
+# Check for game data. Demo is the default because it makes the Forge app
+# playable without asking each installer to provide retail Quake III files.
+PAK_DIR="$IOQ3_DIR/baseq3"
+DEMO_PAK_SRC="$IOQ3_DIR/demoq3/pak0.pk3"
+mkdir -p "$PAK_DIR" "$IOQ3_DIR/demoq3"
 
-if [ -f "$PAK_DIR/pak1.pk3" ]; then
-    print_info "Found pak1.pk3 (full version)"
+if $DEMO; then
+    if [ ! -f "$DEMO_PAK_SRC" ] && [ -f "demoq3/pak0.pk3" ]; then
+        print_info "Copying bundled demo pak into $IOQ3_DIR/demoq3"
+        cp -f "demoq3/pak0.pk3" "$DEMO_PAK_SRC"
+    fi
+    if [ ! -f "$DEMO_PAK_SRC" ]; then
+        print_error "Missing Quake III demo data: $DEMO_PAK_SRC"
+        print_info "Expected demoq3/pak0.pk3 in this repo or $DEMO_PAK_SRC in ioq3-build."
+        exit 1
+    fi
+    print_info "Found Quake III demo pak0.pk3"
 else
-    print_warning "pak1.pk3 not found (demo/shareware version only)"
+    if [ ! -f "$PAK_DIR/pak0.pk3" ]; then
+        print_warning "pak0.pk3 not found in $PAK_DIR"
+        print_info "Retail/lean builds require your own Quake III PAK files in: $PAK_DIR"
+        print_info "Files must be lowercase (pak0.pk3, pak1.pk3, etc.)"
+        exit 1
+    fi
+
+    print_info "Found baseq3/pak0.pk3"
+
+    if [ -f "$PAK_DIR/pak1.pk3" ]; then
+        print_info "Found pak1.pk3 (full version)"
+    else
+        print_warning "pak1.pk3 not found (base pak only)"
+    fi
 fi
 
 # Build ioquake3 with Emscripten
@@ -151,20 +179,19 @@ else
     # Choose which game dir to use
     PRELOAD_DIR="baseq3"
     if $DEMO; then PRELOAD_DIR="demoq3"; fi
-    # For demo, embed data as a single .data (fits under 100MB); override link later to demoq3
-    if $DEMO; then
-      emcmake cmake -S "$IOQ3_DIR" -B "$BUILD_DIR" -DCMAKE_ASM_COMPILER="$(command -v emcc)" -DEMSCRIPTEN_PRELOAD_FILE=ON -DBASEGAME="baseq3"
-    else
-      emcmake cmake -S "$IOQ3_DIR" -B "$BUILD_DIR" -DCMAKE_ASM_COMPILER="$(command -v emcc)" -DEMSCRIPTEN_PRELOAD_FILE=ON -DBASEGAME="$PRELOAD_DIR"
-    fi
+    # For demo, embed data as a single .data (fits under 100MB).
+    PRELOAD_FLAG=$([ $PRELOAD -eq 1 ] && echo ON || echo OFF)
+    emcmake cmake -S "$IOQ3_DIR" -B "$BUILD_DIR" -DCMAKE_ASM_COMPILER="$(command -v emcc)" -DEMSCRIPTEN_PRELOAD_FILE=$PRELOAD_FLAG -DEMSCRIPTEN_PRELOAD_DIR="$PRELOAD_DIR"
+
+    SOURCE_PRELOAD_DIR="$IOQ3_DIR/$PRELOAD_DIR"
 
     # Stage baseq3 (at least PAKs) BEFORE any link step so file_packager succeeds
     print_info "Staging ${PRELOAD_DIR} PAKs for initial .data packaging ..."
     rm -rf "$BUILD_DIR/$PRELOAD_DIR"
-    mkdir -p "$BUILD_DIR/$PRELOAD_DIR"
+    mkdir -p "$BUILD_DIR/$PRELOAD_DIR" "$SOURCE_PRELOAD_DIR"
+    chmod u+w "$SOURCE_PRELOAD_DIR" 2>/dev/null || true
     if $DEMO; then
       # Demo requires demoq3/pak0.pk3
-      DEMO_PAK_SRC="$IOQ3_DIR/demoq3/pak0.pk3"
       if [ -f "$DEMO_PAK_SRC" ]; then
         cp -f "$DEMO_PAK_SRC" "$BUILD_DIR/$PRELOAD_DIR/"
         # Ensure a default.cfg exists for demo mode to satisfy engine startup
@@ -205,6 +232,7 @@ seta m_pitch 0.022
 seta sensitivity 4
 EOF
         fi
+        cp -f "$BUILD_DIR/$PRELOAD_DIR/default.cfg" "$SOURCE_PRELOAD_DIR/default.cfg"
       else
         print_error "Missing demoq3/pak0.pk3 in $IOQ3_DIR/demoq3"
         print_info "Place Quake 3 demo pak0.pk3 at: $IOQ3_DIR/demoq3/pak0.pk3"
@@ -233,17 +261,31 @@ EOF
     # Build everything (will link ioquake3 and create an initial .data)
     cmake --build "$BUILD_DIR" -j
 
-    # After QVMs have been generated under Release/baseq3/vm, stage them
+    # After QVMs have been generated under Release/baseq3/vm, stage them.
+    # The demo pak contains old QVMs (UI API v3), while this engine expects the
+    # QVMs built with the current source tree (UI API v6). Put current QVMs in
+    # the loose demoq3/vm directory so they override the versions inside pak0.
     if [ -d "$BUILD_DIR/Release/baseq3/vm" ]; then
         print_info "Collecting built QVMs..."
         mkdir -p "$BUILD_DIR/$PRELOAD_DIR/vm"
         cp -f "$BUILD_DIR/Release/baseq3/vm"/*.qvm "$BUILD_DIR/$PRELOAD_DIR/vm/" 2>/dev/null || true
+        if $DEMO; then
+          mkdir -p "$SOURCE_PRELOAD_DIR/vm"
+          cp -f "$BUILD_DIR/Release/baseq3/vm"/*.qvm "$SOURCE_PRELOAD_DIR/vm/" 2>/dev/null || true
+        fi
+        rm -f "$BUILD_DIR/Release/ioquake3.js" "$BUILD_DIR/Release/ioquake3.data" 2>/dev/null || true
         cmake --build "$BUILD_DIR" --target ioquake3 -j
     fi
 fi
 
+# Clean previous artifacts to avoid exceeding Forge hosted-resource size
+if [ -f ./clean-artifacts.sh ]; then
+  print_info "Pre-cleaning static artifacts (quake3)"
+  bash ./clean-artifacts.sh --quake3 --purge-static-dirs || true
+fi
+
 # Create static directory if it doesn't exist
-mkdir -p "$FORGE_STATIC_DIR"
+mkdir -p "$ENGINE_DIR"
 
 print_info "Copying build output to Forge app..."
 # Prefer explicit Release artifacts if present; only stage canonical ioquake3.*
@@ -259,16 +301,17 @@ if [ ! -f "$JS_FILE" ] || [ ! -f "$WASM_FILE" ]; then
   exit 1
 fi
 
-cp "$JS_FILE" "$FORGE_STATIC_DIR/ioquake3.js"
-cp "$WASM_FILE" "$FORGE_STATIC_DIR/ioquake3.wasm"
-if [ -f "$DATA_FILE" ]; then cp "$DATA_FILE" "$FORGE_STATIC_DIR/ioquake3.data"; fi
+cp "$JS_FILE" "$ENGINE_DIR/ioquake3.js"
+cp "$WASM_FILE" "$ENGINE_DIR/ioquake3.wasm"
+if [ -f "$DATA_FILE" ]; then cp "$DATA_FILE" "$ENGINE_DIR/ioquake3.data"; fi
 
-# Copy config and game directories only for non-demo builds
-if ! $DEMO; then
-  PREF_JSON="$BUILD_DIR/Release/ioquake3-config.json"
-  if [ -f "$PREF_JSON" ]; then
-    cp "$PREF_JSON" "$FORGE_STATIC_DIR/ioquake3-config.json" || true
-  fi
+# Copy config for diagnostics. For non-preloaded builds, copy game directories
+# so the generated browser glue can fetch files listed in ioquake3-config.json.
+PREF_JSON="$BUILD_DIR/Release/ioquake3-config.json"
+if [ -f "$PREF_JSON" ]; then
+  cp "$PREF_JSON" "$ENGINE_DIR/ioquake3-config.json" || true
+fi
+if [ $PRELOAD -eq 0 ]; then
   for dir in baseq3 missionpack demoq3 tademo; do
     if [ -d "$BUILD_DIR/Release/$dir" ]; then
       mkdir -p "$FORGE_STATIC_DIR/$dir"
@@ -281,11 +324,11 @@ fi
 rm -f "$FORGE_STATIC_DIR/demoq3/pak0.pk3.part"* "$FORGE_STATIC_DIR/demoq3/pak0.parts.json" 2>/dev/null || true
 
 # Write basegame selector for the loader
-echo "$PRELOAD_DIR" > "$FORGE_STATIC_DIR/basegame.txt"
+echo "$PRELOAD_DIR" > "$ENGINE_DIR/basegame.txt"
 
 # Verify files were copied
-if [ -f "$FORGE_STATIC_DIR/ioquake3.js" ] && \
-   [ -f "$FORGE_STATIC_DIR/ioquake3.wasm" ]; then
+if [ -f "$ENGINE_DIR/ioquake3.js" ] && \
+   [ -f "$ENGINE_DIR/ioquake3.wasm" ]; then
     print_info "Build files successfully copied!"
 else
     print_error "Failed to copy some build files"
@@ -294,26 +337,25 @@ fi
 
 # Show file sizes
 print_info "Build file sizes:"
-ls -lh "$FORGE_STATIC_DIR/ioquake3.js" | awk '{print "  ioquake3.js:   " $5}'
-ls -lh "$FORGE_STATIC_DIR/ioquake3.wasm" | awk '{print "  ioquake3.wasm: " $5}'
-if [ -f "$FORGE_STATIC_DIR/ioquake3.data" ]; then ls -lh "$FORGE_STATIC_DIR/ioquake3.data" | awk '{print "  ioquake3.data: " $5}'; else echo "  ioquake3.data: (none)"; fi
+ls -lh "$ENGINE_DIR/ioquake3.js" | awk '{print "  ioquake3.js:   " $5}'
+ls -lh "$ENGINE_DIR/ioquake3.wasm" | awk '{print "  ioquake3.wasm: " $5}'
+if [ -f "$ENGINE_DIR/ioquake3.data" ]; then ls -lh "$ENGINE_DIR/ioquake3.data" | awk '{print "  ioquake3.data: " $5}'; else echo "  ioquake3.data: (none)"; fi
 
-# Compress files (optional)
-if command -v gzip &> /dev/null; then
-  print_info "Compressing files with gzip..."
-  gzip -9 -k -f "$FORGE_STATIC_DIR/ioquake3.wasm"
-  if [ -f "$FORGE_STATIC_DIR/ioquake3.data" ]; then gzip -9 -k -f "$FORGE_STATIC_DIR/ioquake3.data"; fi
-  print_info "Compressed files created (.gz)"
+# Ensure no large preloaded .data remains when PRELOAD=0
+if [ $PRELOAD -eq 0 ]; then
+  rm -f "$ENGINE_DIR/ioquake3.data" "$ENGINE_DIR/ioquake3.data.gz" 2>/dev/null || true
 fi
 
 echo ""
 print_info "${GREEN}Build complete!${NC}"
 echo ""
 print_info "Next steps:"
-echo "  1. Verify the following files exist:"
-echo "     - $FORGE_STATIC_DIR/index.html"
-echo "     - $FORGE_STATIC_DIR/styles.css"
-echo "  2. Run 'forge deploy' to deploy your app"
+echo "  1. Test locally:"
+echo "     cd $FORGE_STATIC_DIR && python3 -m http.server 8000"
+echo "     open http://localhost:8000/"
+echo "  2. Deploy to Forge:"
+echo "     forge deploy"
+echo "     forge install"
 echo ""
 print_info "To test locally, you can use a local web server:"
 echo "  cd $FORGE_STATIC_DIR && python3 -m http.server 8000"
