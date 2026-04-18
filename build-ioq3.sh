@@ -185,6 +185,23 @@ else
 
     SOURCE_PRELOAD_DIR="$IOQ3_DIR/$PRELOAD_DIR"
 
+    stage_custom_paks() {
+      local staged=0
+      if [ ! -d "Models" ]; then
+        return
+      fi
+      for pak in Models/*.pk3; do
+        if [ -f "$pak" ]; then
+          cp -f "$pak" "$BUILD_DIR/$PRELOAD_DIR/"
+          cp -f "$pak" "$SOURCE_PRELOAD_DIR/"
+          staged=$((staged + 1))
+        fi
+      done
+      if [ "$staged" -gt 0 ]; then
+        print_info "Staged $staged custom model/bot PK3(s) from Models/ into $PRELOAD_DIR"
+      fi
+    }
+
     # Stage baseq3 (at least PAKs) BEFORE any link step so file_packager succeeds
     print_info "Staging ${PRELOAD_DIR} PAKs for initial .data packaging ..."
     rm -rf "$BUILD_DIR/$PRELOAD_DIR"
@@ -257,6 +274,8 @@ EOF
         print_info "Lean mode: only pak0.pk3 will be packaged"
       fi
     fi
+
+    stage_custom_paks
 
     # Build everything (will link ioquake3 and create an initial .data)
     cmake --build "$BUILD_DIR" -j
