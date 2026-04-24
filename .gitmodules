@@ -1,0 +1,6 @@
+[submodule "qwasm-build"]
+	path = qwasm-build
+	url = https://github.com/GMH-Code/Qwasm.git
+[submodule "ioq3-build"]
+	path = ioq3-build
+	url = https://github.com/wjkennedy/jioq3
