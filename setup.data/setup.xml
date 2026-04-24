@@ -1,0 +1,40 @@
+<?xml version="1.0" standalone="yes"?>
+<install product="q3demo" desc="Quake III Arena Demo" version="1.11"
+         eula="Help/Q3A_EULA.txt"
+         website_text=""
+         url="http://quake3.lokigames.com/"
+         localurl="Help/Index.html"
+         auto_url="true"
+         postinstall="sh setup.data/postinstall.sh $*">
+  <option install="true" help="Demo binary, required for play">
+    Demo Base Install
+    <binary arch="any" libc="any" symlink="q3demo" icon="icon.xpm">
+      q3demo
+    </binary>
+    <files>
+      README
+      icon.bmp
+      icon.xpm
+      demoq3
+    </files>
+  </option>
+  <option help="Requires proper version of Glide.
+See README on CD for details.">
+    3dfx Voodoo Mesa GL library
+    <binary arch="any" libc="any">
+      libMesaVoodooGL.so.3.2
+    </binary>
+  </option>
+  <option help="HTML manual">
+    Help Files 
+    <files>
+      Help
+    </files>
+  </option>
+  <option help="Standalone server, not linked against X11">
+    Dedicated Server
+    <binary arch="any" libc="any">
+      q3ded
+    </binary>
+  </option>
+</install>

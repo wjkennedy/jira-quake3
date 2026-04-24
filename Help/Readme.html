@@ -1,0 +1,274 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<title>Readme</title>
+</head>
+
+<body bgcolor="#000000" text="#FFFFFF" link="#FF0000" vlink="#0000FF">
+
+<p align="center"><img border="0" src="DocsArt/Header.jpg" width="166" height="166"></p>
+<p align="center"><u><b>Quake III Arena Manual - Last Minute Additions</b></u></p>
+<p align="left">Contents:<br>
+<br>
+<a href="#Manual Addendum">Manual Addendum</a><br>
+<a href="#Low Memory Message During Player Model Selection">Low Memory Message During Player Model Selection</a><br>
+<a href="#Deferred Model Loading">Deferred Model Loading</a><br>
+<a href="#Allocating Memory Using com_hunkmegs">Allocating Memory Using com_hunkmegs</a><br>
+<a href="#Multiple Monitors">Multiple Monitors</a><br>
+<a href="#Default Hot Key for Team Orders">Default Hot Key for Team Orders</a><br>
+<a href="#Weapon Re-spawn Times in Team Games">Weapon Re-spawn Times in Team Games</a><br>
+<a href="#Changing Video During Victory Sequence">Changing Video During Victory
+Sequence</a><br>
+<a href="#Config file Load/Save">Config file Load/Save</a><br>
+<a href="#Last Minute Video Card Compatibility Results">Last Minute Video Card Compatibility Results</a><br>
+<a href="#Problems Opening the On-line Manual">Problems Opening the On-line Manual<br>
+</a><a href="#Setting up a Server With Map Cycling">Setting up a Server With Map
+Cycling<br>
+<p align="left"><a href="Index.html">Help System Main Page</a></p>
+<hr>
+<p align="left"><u><a name="Manual Addendum">Manual Addendum</a></u><br>
+<br>
+<u>Medals</u>
+<br>
+Medals measure and instantly reward outstanding combat performance. When a
+player receives a verbal praise award, such as &quot;Excellent!&quot; the medal
+for that award appears above the gladiator's head. It swiftly fades away. All
+your medals of that type earned in this match are displayed for you. They also
+swiftly fade. When the match ends, all medals earned in the match are proudly
+displayed. Between matches you see the grand totals for all medals earned since
+the game began. The RESET control will wipe these values out.
+</p>
+
+<p align="left"><u>CTF (Capture the Flag) Rules<br>
+</u>Slip into the other team's home base, grab its flag, and run home to
+score.&nbsp; What could be simpler? Now do it while dodging heavy artillery fire
+and you've got an idea of how this fast moving team game feels.&nbsp; Score the
+most and win!<u><br>
+<br>
+</u>Scoring:<br>
+The &quot;Capture&quot; Point - Each time a member of the team captures the
+enemy teams flag and returns it to their own flag, the team receives 1
+&quot;Capture&quot; point.
+</p>
+
+<p align="left">Winning:<br>
+The first team to reach the Capture Limit (which can be set or modified in the
+Server Setup Screen), or the team with the most captures when the time limit is
+hit, wins!
+</p>
+
+<p align="left">Individual Scoring:<br>
+Quake III Arena also keeps track of each players person scoring throughout a
+game.&nbsp; This information is displayed on the left side of each player in the
+scoreboard.&nbsp; These points do not affect the outcome of the game, but it
+will reveal if someone on the team isn't pulling their weight.<br>
+</p>
+
+<p align="left">Capture - 5 Points awarded to each player on the team.<br>
+Frag (Kill) - 1 Point<br>
+Killing Flag Carrier&nbsp; -&nbsp; 3 Points (1 point for the Frag, and 2 points
+because he had the flag).<br>
+Returning Flag to Base - 1 Point<br>
+Defending the Flag Carrier - 2 Points (1 point for the Frag, and 1 point for
+defending the flag carrier).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; --You are awarded these points if you
+Frag an opposing player who is in the immediate vicinity, if your opponent has 
+inflicted damage to the flag carrier within approximately the last 5 seconds.&nbsp;</p>
+
+<hr>
+
+<p align="left"><u><a name="Low Memory Message During Player Model Selection">Low Memory Message During Player Model Selection</a></u><br>
+When choosing models from the Player Menu you may encounter a low memory
+message. This tells you that memory space is currently not available to display
+your selected model. This is not a problem and will not interfere with your
+game. Select the portrait of the model you wish to play and exit the menu as
+normal. Your new model will display in the game.&nbsp; To &quot;flush-out&quot;
+the memory, you can also restart your video by pulling down the console
+(accessed by pressing the ~ key) and typing:</p>
+
+<p align="left">\vid_restart</p>
+
+<p align="left">This will restart your video and enable you to view additional
+models.</p>
+
+<hr>
+<p align="left">
+<u><a name="Deferred Model Loading">Deferred Model Loading</a></u><br>
+In order to maintain the best game play, Quake III Arena may wait to load a
+model until you press the Tab key (or your Show Scores key), or die and respawn
+into the arena. A red &quot;negation&quot; circle over your face in the status
+bar indicates your desired player model has not been loaded or is being
+'deferred.' In the same manner, other players' deferred models will not load
+immediately. They will appear the same as your model in the game. Once again,
+press Tab (Show Scores key) to update to the appropriate models.</p>
+<hr>
+<p align="left"><u><a name="Allocating Memory Using com_hunkmegs">Allocating
+Memory Using com_hunkmegs</a><br>
+</u>The command com_hunkmegs is used to increase or decrease the size of memory
+used by the game. By default it is set to 56 which allows the game to run on
+computers with 64 megs of ram.&nbsp; If your system has more than 64 MB of RAM,
+you can adjust this value to allow for the loading of more unique models.&nbsp; </p>
+<p>For example: If you have a machine with 256 megs of RAM you can use the
+command com_hunkmegs 128 to allocate more memory to the program.&nbsp; You would
+do this by accessing the game console (press the ~ key), and typing in:</p>
+<p>\com_hunkmegs 128</p>
+<p>(substitute the amount of memory that you would like to dedicate for the
+&quot;128&quot; in the example above).</p>
+<p>NOTE:&nbsp; You can only allocate up to 3/4 of your total system memory
+before you may experience problems with your computer system.&nbsp;</p>
+<p>Please refer to the <a href="DedicatedServer.html">Dedicated Server</a>
+document for an example of how to alter com_hunkmegs on dedicated servers.</p>
+<hr>
+<p align="left"><u><a name="Default Hot Key for Team Orders">Default Hot Key for Team Orders</a></u><br>
+Press the function key F3 (default) as a shortcut to access the Team Orders
+menu.</p>
+<hr>
+<p align="left"><u><a name="Weapon Re-spawn Times in Team Games">Weapon Re-spawn Times in Team Games</a><br>
+</u>You will notice in Quake III Arena that the weapon re-spawn times are
+slower during teamplay games (Team Deathmatch and CTF).&nbsp; This was done for
+increased playability in the way the arenas resources are controlled.
+</p>
+
+<hr>
+<p align="left"><u><a name="Changing Video During Victory Sequence">Changing
+Video During Victory Sequence</a><br>
+</u>In single player, if during the victory sequence after a level, you do a
+vid_restart from the console, the screen will return without buttons for
+continuing.&nbsp; At this point you will only be able to access the menu by
+pressing the Esc. key.&nbsp; From the Esc. menu you can then go to the main
+menu, restart the arena, or exit the game.&nbsp; You can also progress to the
+next level by going back to the level selection menu.</p>
+<p align="left">Also, in single player, if during the victory sequence, you
+press the Alt. and Enter keys to change between windowed mode, and non-windowed
+mode, the menu buttons at the bottom of the screen will not appear. At this
+point you will only be able to access the menu by pressing the Esc. key.&nbsp;
+From the Esc. menu you can then go to the main menu, restart the arena, or exit
+the game.&nbsp; You can also progress to the next level by going back to the
+level selection menu.</p>
+
+<hr>
+<p align="left"><u><a name="Config file Load/Save">Config file Load/Save</a><br>
+</u>Since the release of Q3DemoTest, the loading and saving of personal config
+(.cfg) files through the game menus has been removed.&nbsp; The ability to
+&quot;exec&quot; a config file is still available through the console (accessed
+by pressing the ~ key while in the game).&nbsp; A config file is saved when you
+change any of the game or system options.&nbsp; The name of this file is the
+same as the name you type in for your &quot;in-game&quot; character name.&nbsp;
+You can exec this file by accessing the console and typing:
+</p>
+
+<p align="left">\exec name.cfg
+</p>
+
+<p align="left">In the example above, substitute the name that you have given
+your character, for the word &quot;name.&quot;
+</p>
+
+<hr>
+<p align="left"><u><a name="Last Minute Video Card Compatibility Results">Last Minute Video Card Compatibility Results</a><br>
+</u>Quake III Arena has been tested on many, but not all of the major cards
+incorporating the chipsets listed below.&nbsp; As with any piece of advanced
+computer technology, Linux Quake III Arena requires the latest video card 
+Linux drivers available, and as drivers change results may also change.&nbsp; 
+Below is a list of compatibility results based on our most recent pre-release tests.
+</p>
+
+<p align="left"><b>3dfx:<br>
+</b>
+Voodoo 1 (Voodoo Graphics) - Video replay might be slow.<br>
+Voodoo Rush - Not tested.<br>
+Voodoo 2 - Video replay might be slow.<br>
+Voodoo 3 - DGA mouse mode might break.<br>
+Voodoo Banshee - DGA mouse mode might break.
+</p>
+<p>
+The most recent drivers are available from 
+<a href="http://www.3dfxgamers.com/">3dfx Gamers' website</a>. The DRI pre-release
+drivers are not supported at this time. 
+</P>
+
+<p align="left"><b>Matrox:<br>
+</b>G200 - Not tested.<br>
+G400 -  The Accelerated GLX driver for G200/G400 is under active development.<br>
+</p>
+
+<p align="left"><b>NVidia:<br>
+</b>
+Riva128 - Not tested.<br>
+TNT - Not tested.<br>
+TNT2 - Does work with the XFree86 SVGA server, GLX, and Mesa-3.0 library
+       available from <a href="http://www.nvidia.com/">Nvidia's website</a>.<br>
+       This driver is an early release, performance might not be sufficient
+       on slower systems.<br>
+GeForce256 - Not tested.
+</p>
+<p>
+Make sure to visit the GL drivers page in the support section at the
+<a href="http://www.lokigames.com/">Loki website</a> for updates.
+</P> 
+
+
+
+<hr>
+<p align="left"><u><a name="Problems Opening the On-line Manual">Problems
+Opening the On-line Manual</a><br>
+</u>Use a web browser like Netscape Navigator or lynx to conveniently access 
+the HTML pages on the CD. If you are experiencing any problems opening the 
+on-line manual, please make sure that you are using a browser that support 
+frames.&nbsp;</p>
+<hr>
+<p align="left"><u><a name="Setting up a Server With Map Cycling">Setting up a
+Server With Map Cycling</a><br>
+</u>Advanced users can create configuration (or .cfg) files that will execute
+many commands at once.&nbsp; One application for this is in creating a
+multiplayer game where the game cycles to the next arena listed in the &quot;config&quot;
+file and sets a new fraglimit for that arena.&nbsp; An example config file is
+listed below.&nbsp; To create this or a similar config file, you will simply
+need to create a new text file, copy everything listed below, save it, then
+rename it to FFA.cfg (or whatever name you choose).&nbsp; You should place these
+files in your \baseq3 directory.</p>
+<p>//This config file cycles through all the maps in the game. Free For All
+mode.</p>
+<p>set g_gametype 0</p>
+<p>set m1 &quot;fraglimit 10; map q3dm1; set nextmap vstr m2&quot;<br>
+set m2 &quot;fraglimit 10; map q3dm2 ; set nextmap vstr m3&quot;<br>
+set m3 &quot;fraglimit 15; map q3dm3 ; set nextmap vstr m4&quot;<br>
+set m4 &quot;fraglimit 10; map q3tourney1 ; set nextmap vstr m5&quot;<br>
+set m5 &quot;fraglimit 15; map q3dm4 ; set nextmap vstr m6&quot;<br>
+set m6 &quot;fraglimit 15; map q3dm5 ; set nextmap vstr m7&quot;<br>
+set m7 &quot;fraglimit 15; map q3dm6 ; set nextmap vstr m8&quot;<br>
+set m8 &quot;fraglimit 10; map q3tourney2 ; set nextmap vstr m9&quot;<br>
+set m9 &quot;fraglimit 20; map q3dm7 ; set nextmap vstr m10&quot;<br>
+set m10 &quot;fraglimit 20; map q3dm8 ; set nextmap vstr m11&quot;<br>
+set m11 &quot;fraglimit 20; map q3dm9 ; set nextmap vstr m12&quot;<br>
+set m12 &quot;fraglimit 10; map q3tourney3 ; set nextmap vstr m13&quot;<br>
+set m13 &quot;fraglimit 15; map q3dm10 ; set nextmap vstr m14&quot;<br>
+set m14 &quot;fraglimit 20; map q3dm11 ; set nextmap vstr m15&quot;<br>
+set m15 &quot;fraglimit 20; map q3dm12 ; set nextmap vstr m16&quot;<br>
+set m16 &quot;fraglimit 10; map q3tourney4 ; set nextmap vstr m17&quot;<br>
+set m17 &quot;fraglimit 15; map q3dm13 ; set nextmap vstr m18&quot;<br>
+set m18 &quot;fraglimit 20; map q3dm14 ; set nextmap vstr m19&quot;<br>
+set m19 &quot;fraglimit 20; map q3dm15 ; set nextmap vstr m20&quot;<br>
+set m20 &quot;fraglimit 10; map q3tourney5 ; set nextmap vstr m21&quot;<br>
+set m21 &quot;fraglimit 15; map q3dm16 ; set nextmap vstr m22&quot;<br>
+set m22 &quot;fraglimit 15; map q3dm17 ; set nextmap vstr m23&quot;<br>
+set m23 &quot;fraglimit 15; map q3dm18 ; set nextmap vstr m24&quot;<br>
+set m24 &quot;fraglimit 15; map q3dm19 ; set nextmap vstr m25&quot;<br>
+set m25 &quot;fraglimit 10; map q3tourney6 ; set nextmap vstr m1&quot;</p>
+<p>vstr m1</p>
+<p align="left">To execute a server setup configuration file, you should bring
+down the console (accessed by pressting the ~ key) <b>while in the Quake III
+menu system</b> and type:</p>
+<p align="left">\exec ffa.cfg</p>
+<p align="left">Substitute the name of your config for &quot;ffa&quot; in the
+example above.</p>
+<hr>
+<p align="left">&nbsp;</p>
+
+</body>
+
+</html>

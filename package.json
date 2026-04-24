@@ -1,18 +1,21 @@
 {
-  "name": "quake-doom-forge-app",
+  "name": "quake-3-forge-app",
   "version": "1.0.0",
-  "description": "Quake and DOOM games as a Forge app for Jira & Confluence",
+  "description": "Quake 3 Arena as a Forge app for Jira & Confluence",
   "private": true,
   "scripts": {
     "build:doom": "./game-build.sh doom",
     "build:quake": "./game-build.sh quake",
     "build:quake:webgl": "./game-build.sh quake --webgl",
     "build:quake3": "./game-build.sh quake3",
-    "build:all": "./game-build.sh all"
+    "build:all": "./game-build.sh all",
+    "serve:quake3": "python3 -m http.server 8000 --directory static/quake3",
+    "ws-proxy": "node server/ws-udp-proxy/index.js"
   },
   "dependencies": {
     "@forge/resolver": "1.7.1",
-    "next": "16.1.1",
+    "ws": "^8.17.1",
+    "next": "^16.1.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "class-variance-authority": "0.7.1",

@@ -1,20 +1,32 @@
 modules:
   jira:globalPage:
-    - key: quake3-game-jira
+    - key: quake3-multiplayer-jira
       resource: quake3
-      title: Quake3
+      title: Quake III Arena
   jira:issueGlance:
     - key: quake3-glance
       resource: quake3
-      label: Quake3
-      title: Play Quake3
+      label: Quake III
+      title: Play Quake III
       icon: https://developer.atlassian.com/platform/forge/images/icons/issue-glance-icon.svg
+  confluence:globalPage:
+    - key: quake3-multiplayer-confluence
+      resource: quake3
+      title: Quake III Arena
+      route: quake3
 app:
+  licensing:
+    enabled: false
   runtime:
-    name: nodejs20.x
-  id: ari:cloud:ecosystem::app/7069de3a-a214-4d2a-8f03-481358dc171a
+    name: nodejs22.x
+  id: ari:cloud:ecosystem::app/063e7146-9980-4638-a24c-97852f4f702b
 permissions:
-  scopes: []
+  scopes: [ storage:app ]
+  external:
+    fetch:
+      client:
+        - address: "wss://*.trycloudflare.com"
+          inScopeEUD: false
   content:
     scripts:
       - 'unsafe-eval'
